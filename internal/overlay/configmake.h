@@ -1,0 +1,1 @@
+#define LIBDIR "/dev/null"
