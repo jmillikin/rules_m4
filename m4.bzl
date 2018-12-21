@@ -205,7 +205,7 @@ def _m4_download(ctx):
     ctx.symlink(ctx.attr._overlay_bin_BUILD, "bin/BUILD.bazel")
     ctx.symlink(ctx.attr._overlay_configmake_h, "stub-config/configmake.h")
     ctx.template("stub-config/config.h", ctx.attr._overlay_config_h, {
-        "version": version,
+        "{VERSION}": version,
     })
 
 m4_download = repository_rule(
@@ -213,11 +213,11 @@ m4_download = repository_rule(
     attrs = {
         "version": attr.string(mandatory = True),
         "_overlay_BUILD": attr.label(
-            default = "@io_bazel_rules_m4//internal:overlay/m4_BUILD",
+            default = "@io_bazel_rules_m4//internal:overlay/m4.BUILD",
             single_file = True,
         ),
         "_overlay_bin_BUILD": attr.label(
-            default = "@io_bazel_rules_m4//internal:overlay/m4_bin_BUILD",
+            default = "@io_bazel_rules_m4//internal:overlay/m4_bin.BUILD",
             single_file = True,
         ),
         "_overlay_config_h": attr.label(

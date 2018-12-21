@@ -13,8 +13,8 @@ extern char **environ;
 #define PACKAGE "m4"
 #define PACKAGE_BUGREPORT "bug-m4@gnu.org"
 #define PACKAGE_NAME "GNU M4"
-#define PACKAGE_STRING "GNU M4 {version}"
-#define VERSION "{version}"
+#define PACKAGE_STRING "GNU M4 {VERSION}"
+#define VERSION "{VERSION}"
 
 #define _GL_ARG_NONNULL(x)
 #define _GL_ATTRIBUTE_FORMAT_PRINTF(x,y)
@@ -33,3 +33,5 @@ extern char **environ;
 #define RENAME_OPEN_FILE_WORKS 0
 
 #define SYSCMD_SHELL "/bin/false"
+
+char *secure_getenv (char const *name);
