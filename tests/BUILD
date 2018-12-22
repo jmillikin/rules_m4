@@ -1,8 +1,10 @@
-load("//:m4.bzl", "m4_expansion", "m4_template")
+load("//:m4.bzl", "m4", "m4_template")
 
-m4_expansion(
+m4(
     name = "expansion_test",
     srcs = ["expansion_test.in"],
+    out = "expansion_test.txt",
+    opts = ["--synclines"],
 )
 
 m4_template(
@@ -16,7 +18,7 @@ m4_template(
     base = ":template_1",
 )
 
-m4_expansion(
+m4(
     name = "template_test",
     srcs = ["template_test.in"],
     template = ":template_2",

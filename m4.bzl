@@ -41,9 +41,11 @@ M4_VERSIONS = list(_VERSION_URLS)
 
 _TemplateInfo = provider(fields = ["state_file"])
 
-def _m4_expansion(ctx):
+def _m4_impl(ctx):
     m4 = _m4_context(ctx)
-    out = ctx.actions.declare_file(ctx.attr.name)
+    out = ctx.outputs.out
+    if out == None:
+        out = ctx.actions.declare_file(ctx.attr.name)
 
     args = ctx.actions.args()
     args.add_all([out, m4.executable])
@@ -52,6 +54,7 @@ def _m4_expansion(ctx):
         tmpl = ctx.attr.template[_TemplateInfo].state_file
         args.add("--reload-state", tmpl.path)
         inputs += depset([tmpl])
+    args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
     ctx.actions.run(
         executable = m4.toolchain._m4_internal.capture_stdout,
@@ -68,8 +71,8 @@ def _m4_expansion(ctx):
         files = depset([out]),
     )
 
-m4_expansion = rule(
-    _m4_expansion,
+m4 = rule(
+    _m4_impl,
     attrs = {
         "srcs": attr.label_list(
             allow_empty = False,
@@ -81,21 +84,25 @@ m4_expansion = rule(
             single_file = True,
             providers = [_TemplateInfo],
         ),
+        "opts": attr.string_list(
+            allow_empty = True,
+        ),
+        "out": attr.output(),
     },
     toolchains = [_M4_TOOLCHAIN],
 )
 """Expand a set of M4 sources.
 
 ```python
-load("@io_bazel_rules_m4//:m4.bzl", "m4_expansion")
-m4_expansion(
+load("@io_bazel_rules_m4//:m4.bzl", "m4")
+m4(
     name = "hello.txt",
     srcs = ["hello.in.txt"],
 )
 ```
 """
 
-def _m4_template(ctx):
+def _m4_template_impl(ctx):
     m4 = _m4_context(ctx)
     out = ctx.actions.declare_file(ctx.attr.name + ".m4f")
 
@@ -106,6 +113,7 @@ def _m4_template(ctx):
         base = ctx.attr.base[_TemplateInfo].state_file
         args.add("--reload-state", base.path)
         inputs += depset([base])
+    args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
     ctx.actions.run(
         executable = m4.executable,
@@ -123,7 +131,7 @@ def _m4_template(ctx):
     ]
 
 m4_template = rule(
-    _m4_template,
+    _m4_template_impl,
     attrs = {
         "srcs": attr.label_list(
             allow_empty = False,
@@ -135,18 +143,21 @@ m4_template = rule(
             single_file = True,
             providers = [_TemplateInfo],
         ),
+        "opts": attr.string_list(
+            allow_empty = True,
+        ),
     },
     toolchains = [_M4_TOOLCHAIN],
 )
 """Compile a set of M4 sources into a shared template.
 
 ```python
-load("@io_bazel_rules_m4//:m4.bzl", "m4_expansion", "m4_template")
+load("@io_bazel_rules_m4//:m4.bzl", "m4", "m4_template")
 m4_template(
     name = "tmpl",
     srcs = ["tmpl.m4"],
 )
-m4_expansion(
+m4(
     name = "hello.txt",
     srcs = ["hello.in.txt"],
     template = ":tmpl",

@@ -15,9 +15,10 @@ std::string ReadFile(const std::string& path) {
 }  // namespace
 
 TEST(RulesM4, ExpansionTest) {
-    const char EXPECT[] = R"(Hello, world!
+    const char EXPECT[] = R"(#line 2 "tests/expansion_test.in"
+Hello, world!
 )";
-    const auto got = ReadFile("./tests/expansion_test");
+    const auto got = ReadFile("./tests/expansion_test.txt");
     ASSERT_EQ(got, EXPECT);
 }
 
