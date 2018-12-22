@@ -55,6 +55,10 @@ cc_library(
         "lib/version-etc-fsf.c",
         "lib/version-etc.c",
         "lib/wait-process.c",
+        "lib/vasprintf.c",
+        "lib/vasnprintf.c",
+        "lib/printf-parse.c",
+        "lib/printf-args.c",
     ],
     copts = ["-UDEBUG"],
     textual_hdrs = [

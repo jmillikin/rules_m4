@@ -188,6 +188,11 @@ def _m4_download(ctx):
         "{VERSION}": version,
     })
 
+    # Hardcode getprogname() to "m4" to avoid digging into the gnulib shims.
+    ctx.template("lib/error.c", "lib/error.c", substitutions = {
+        "#define program_name getprogname ()": '#define program_name "m4"',
+    }, executable = False)
+
 m4_download = repository_rule(
     _m4_download,
     attrs = {
