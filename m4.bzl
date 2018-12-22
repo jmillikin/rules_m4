@@ -22,6 +22,12 @@ m4_register_toolchains()
 ```
 """
 
+load(
+    "//m4:toolchain.bzl",
+    _M4_TOOLCHAIN = "M4_TOOLCHAIN",
+    _m4_context = "m4_context",
+)
+
 _LATEST = "1.4.18"
 
 _VERSION_URLS = {
@@ -31,30 +37,30 @@ _VERSION_URLS = {
     },
 }
 
-M4_TOOLCHAIN = "@io_bazel_rules_m4//m4:toolchain_type"
-
 M4_VERSIONS = list(_VERSION_URLS)
 
 _TemplateInfo = provider(fields = ["state_file"])
 
 def _m4_expansion(ctx):
-    toolchain = ctx.toolchains[M4_TOOLCHAIN]
-    m4 = toolchain.m4
-    wrapper = toolchain._internal.capture_stdout
+    m4 = _m4_context(ctx)
     out = ctx.actions.declare_file(ctx.attr.name)
-    opts = []
+
+    args = ctx.actions.args()
+    args.add_all([out, m4.executable])
     inputs = m4.inputs + ctx.files.srcs
     if ctx.attr.template:
         tmpl = ctx.attr.template[_TemplateInfo].state_file
-        opts.append("--reload-state=" + tmpl.path)
-        inputs.append(tmpl)
+        args.add("--reload-state", tmpl.path)
+        inputs += depset([tmpl])
+    args.add_all(ctx.files.srcs)
     ctx.actions.run(
-        executable = wrapper,
-        arguments = [out.path, m4.executable.path] + opts + [f.path for f in ctx.files.srcs],
+        executable = m4.toolchain._m4_internal.capture_stdout,
+        arguments = [args],
         inputs = inputs,
         input_manifests = m4.input_manifests,
         outputs = [out],
-        env = m4.env(ctx),
+        tools = [m4.executable],
+        env = m4.env,
         mnemonic = "ExpandTemplate",
         progress_message = "Expanding M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
     )
@@ -76,7 +82,7 @@ m4_expansion = rule(
             providers = [_TemplateInfo],
         ),
     },
-    toolchains = [M4_TOOLCHAIN],
+    toolchains = [_M4_TOOLCHAIN],
 )
 """Expand a set of M4 sources.
 
@@ -90,21 +96,24 @@ m4_expansion(
 """
 
 def _m4_template(ctx):
-    m4 = ctx.toolchains[M4_TOOLCHAIN].m4
+    m4 = _m4_context(ctx)
     out = ctx.actions.declare_file(ctx.attr.name + ".m4f")
-    opts = ["--freeze-state=" + out.path]
+
+    args = ctx.actions.args()
+    args.add("--freeze-state", out.path)
     inputs = m4.inputs + ctx.files.srcs
     if ctx.attr.base:
         base = ctx.attr.base[_TemplateInfo].state_file
-        opts.append("--reload-state=" + base.path)
-        inputs.append(base)
+        args.add("--reload-state", base.path)
+        inputs += depset([base])
+    args.add_all(ctx.files.srcs)
     ctx.actions.run(
         executable = m4.executable,
-        arguments = opts + [f.path for f in ctx.files.srcs],
+        arguments = [args],
         inputs = inputs,
         input_manifests = m4.input_manifests,
         outputs = [out],
-        env = m4.env(ctx),
+        env = m4.env,
         mnemonic = "ParseTemplate",
         progress_message = "Parsing M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
     )
@@ -127,7 +136,7 @@ m4_template = rule(
             providers = [_TemplateInfo],
         ),
     },
-    toolchains = [M4_TOOLCHAIN],
+    toolchains = [_M4_TOOLCHAIN],
 )
 """Compile a set of M4 sources into a shared template.
 
@@ -144,46 +153,6 @@ m4_expansion(
 )
 ```
 """
-
-def _m4_env(ctx):
-    return {
-        # Prevent m4 from loading charset data from outside the sandbox.
-        "CHARSETALIASDIR": "/dev/null",
-    }
-
-def _m4_toolchain(ctx):
-    (inputs, _, input_manifests) = ctx.resolve_command(
-        command = "m4",
-        tools = [ctx.attr.m4],
-    )
-    return [
-        platform_common.ToolchainInfo(
-            m4 = struct(
-                executable = ctx.executable.m4,
-                inputs = inputs,
-                input_manifests = input_manifests,
-                env = _m4_env,
-            ),
-            _internal = struct(
-                capture_stdout = ctx.executable._capture_stdout,
-            ),
-        ),
-    ]
-
-m4_toolchain = rule(
-    _m4_toolchain,
-    attrs = {
-        "m4": attr.label(
-            executable = True,
-            cfg = "host",
-        ),
-        "_capture_stdout": attr.label(
-            executable = True,
-            default = "//internal:capture_stdout",
-            cfg = "host",
-        ),
-    },
-)
 
 def _check_version(version):
     if version not in _VERSION_URLS:
@@ -213,19 +182,19 @@ m4_download = repository_rule(
     attrs = {
         "version": attr.string(mandatory = True),
         "_overlay_BUILD": attr.label(
-            default = "@io_bazel_rules_m4//internal:overlay/m4.BUILD",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/m4.BUILD",
             single_file = True,
         ),
         "_overlay_bin_BUILD": attr.label(
-            default = "@io_bazel_rules_m4//internal:overlay/m4_bin.BUILD",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/m4_bin.BUILD",
             single_file = True,
         ),
         "_overlay_config_h": attr.label(
-            default = "@io_bazel_rules_m4//internal:overlay/config.h",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/config.h",
             single_file = True,
         ),
         "_overlay_configmake_h": attr.label(
-            default = "@io_bazel_rules_m4//internal:overlay/configmake.h",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/configmake.h",
             single_file = True,
         ),
     },
@@ -239,4 +208,4 @@ def m4_register_toolchains(version = _LATEST):
             name = repo_name,
             version = version,
         )
-    native.register_toolchains("@io_bazel_rules_m4//toolchains:v{}_toolchain".format(version))
+    native.register_toolchains("@io_bazel_rules_m4//m4/toolchains:v{}_toolchain".format(version))
