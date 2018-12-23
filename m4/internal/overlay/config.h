@@ -1,5 +1,6 @@
-#include <stdint.h>
 #include <fcntl.h>
+#include <stdarg.h>
+#include <stdint.h>
 
 extern char **environ;
 
@@ -35,3 +36,4 @@ extern char **environ;
 #define SYSCMD_SHELL "/bin/false"
 
 char *secure_getenv (char const *name);
+int vasprintf(char **strp, const char *fmt, va_list ap);
