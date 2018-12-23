@@ -39,8 +39,6 @@ _VERSION_URLS = {
 
 M4_VERSIONS = list(_VERSION_URLS)
 
-_TemplateInfo = provider(fields = ["state_file"])
-
 def _m4_impl(ctx):
     m4 = _m4_context(ctx)
     out = ctx.outputs.out
@@ -51,9 +49,8 @@ def _m4_impl(ctx):
     args.add_all([out, m4.executable])
     inputs = m4.inputs + ctx.files.srcs
     if ctx.attr.template:
-        tmpl = ctx.attr.template[_TemplateInfo].state_file
-        args.add("--reload-state", tmpl.path)
-        inputs += depset([tmpl])
+        args.add("--reload-state", ctx.file.template.path)
+        inputs += depset([ctx.file.template])
     args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
     ctx.actions.run(
@@ -81,8 +78,7 @@ m4 = rule(
         ),
         "template": attr.label(
             mandatory = False,
-            single_file = True,
-            providers = [_TemplateInfo],
+            allow_single_file = [".m4f"],
         ),
         "opts": attr.string_list(
             allow_empty = True,
@@ -110,9 +106,8 @@ def _m4_template_impl(ctx):
     args.add("--freeze-state", out.path)
     inputs = m4.inputs + ctx.files.srcs
     if ctx.attr.base:
-        base = ctx.attr.base[_TemplateInfo].state_file
-        args.add("--reload-state", base.path)
-        inputs += depset([base])
+        args.add("--reload-state", ctx.file.base.path)
+        inputs += depset([ctx.file.base])
     args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
     ctx.actions.run(
@@ -125,10 +120,7 @@ def _m4_template_impl(ctx):
         mnemonic = "ParseTemplate",
         progress_message = "Parsing M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
     )
-    return [
-        DefaultInfo(files = depset([out])),
-        _TemplateInfo(state_file = out),
-    ]
+    return DefaultInfo(files = depset([out]))
 
 m4_template = rule(
     _m4_template_impl,
@@ -140,8 +132,7 @@ m4_template = rule(
         ),
         "base": attr.label(
             mandatory = False,
-            single_file = True,
-            providers = [_TemplateInfo],
+            allow_single_file = [".m4f"],
         ),
         "opts": attr.string_list(
             allow_empty = True,

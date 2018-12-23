@@ -25,9 +25,10 @@ def _m4_toolchain(ctx):
         platform_common.ToolchainInfo(
             _m4_internal = struct(
                 executable = ctx.executable.m4,
-                inputs = depset(inputs),
+                inputs = depset(inputs + [ctx.executable._deny_shell]),
                 input_manifests = input_manifests,
                 capture_stdout = ctx.executable._capture_stdout,
+                deny_shell = ctx.executable._deny_shell,
             ),
         ),
     ]
@@ -44,6 +45,11 @@ m4_toolchain = rule(
             default = "//m4/internal:capture_stdout",
             cfg = "host",
         ),
+        "_deny_shell": attr.label(
+            executable = True,
+            default = "//m4/internal:deny_shell",
+            cfg = "host",
+        ),
     },
 )
 
@@ -58,5 +64,7 @@ def m4_context(ctx):
         env = {
             # Prevent m4 from loading charset data from outside the sandbox.
             "CHARSETALIASDIR": "/dev/null",
+            # Used to control whether M4 can run shell commands
+            "M4_SYSCMD_SHELL": impl.deny_shell.path,
         },
     )

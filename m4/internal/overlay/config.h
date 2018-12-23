@@ -33,7 +33,7 @@ extern char **environ;
 #define HAVE_WORKING_O_NOFOLLOW 1
 #define RENAME_OPEN_FILE_WORKS 0
 
-#define SYSCMD_SHELL "/bin/false"
+#define SYSCMD_SHELL getenv("M4_SYSCMD_SHELL")
 
 char *secure_getenv (char const *name);
 int vasprintf(char **strp, const char *fmt, va_list ap);
