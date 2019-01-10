@@ -17,7 +17,7 @@
 """Bazel build rules for GNU M4.
 
 ```python
-load("@io_bazel_rules_m4//:m4.bzl", "m4_register_toolchains")
+load("@io_bazel_rules_m4//m4:m4.bzl", "m4_register_toolchains")
 m4_register_toolchains()
 ```
 """
@@ -95,7 +95,7 @@ m4 = rule(
 """Expand a set of M4 sources.
 
 ```python
-load("@io_bazel_rules_m4//:m4.bzl", "m4")
+load("@io_bazel_rules_m4//m4:m4.bzl", "m4")
 m4(
     name = "hello.txt",
     srcs = ["hello.in.txt"],
@@ -148,7 +148,7 @@ m4_template = rule(
 """Compile a set of M4 sources into a shared template.
 
 ```python
-load("@io_bazel_rules_m4//:m4.bzl", "m4", "m4_template")
+load("@io_bazel_rules_m4//m4:m4.bzl", "m4", "m4_template")
 m4_template(
     name = "tmpl",
     srcs = ["tmpl.m4"],

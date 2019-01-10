@@ -1,4 +1,4 @@
-load("//:m4.bzl", "M4_VERSIONS")
+load("//m4:m4.bzl", "M4_VERSIONS")
 load("//m4:toolchain.bzl", "m4_toolchain_info")
 
 [m4_toolchain_info(

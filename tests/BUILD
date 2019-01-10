@@ -1,4 +1,4 @@
-load("//:m4.bzl", "m4", "m4_template")
+load("//m4:m4.bzl", "m4", "m4_template")
 
 m4(
     name = "expansion_test",
