@@ -61,10 +61,4 @@ def m4_context(ctx):
         executable = impl.executable,
         inputs = impl.inputs,
         input_manifests = impl.input_manifests,
-        env = {
-            # Prevent m4 from loading charset data from outside the sandbox.
-            "CHARSETALIASDIR": "/dev/null",
-            # Used to control whether M4 can run shell commands
-            "M4_SYSCMD_SHELL": impl.deny_shell.path,
-        },
     )

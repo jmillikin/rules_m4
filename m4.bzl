@@ -39,6 +39,11 @@ _VERSION_URLS = {
 
 M4_VERSIONS = list(_VERSION_URLS)
 
+def _m4_env(m4):
+    return {
+        "M4_SYSCMD_SHELL": m4.toolchain._m4_internal.deny_shell.path,
+    }
+
 def _m4_impl(ctx):
     m4 = _m4_context(ctx)
     out = ctx.outputs.out
@@ -60,7 +65,7 @@ def _m4_impl(ctx):
         input_manifests = m4.input_manifests,
         outputs = [out],
         tools = [m4.executable],
-        env = m4.env,
+        env = _m4_env(m4),
         mnemonic = "ExpandTemplate",
         progress_message = "Expanding M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
     )
@@ -116,7 +121,7 @@ def _m4_template_impl(ctx):
         inputs = inputs,
         input_manifests = m4.input_manifests,
         outputs = [out],
-        env = m4.env,
+        env = _m4_env(m4),
         mnemonic = "ParseTemplate",
         progress_message = "Parsing M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
     )
@@ -182,6 +187,15 @@ def _m4_download(ctx):
     # Hardcode getprogname() to "m4" to avoid digging into the gnulib shims.
     ctx.template("lib/error.c", "lib/error.c", substitutions = {
         "#define program_name getprogname ()": '#define program_name "m4"',
+    }, executable = False)
+
+    # Stub out the sandbox-escaping charset alias loader.
+    ctx.template("lib/localcharset.c", "lib/localcharset.c", substitutions = {
+        "get_charset_aliases (void)": '''
+get_charset_aliases (void) { return ""; }
+static const char *LIBDIR = "";
+static const char * _old_get_charset_aliases (void)
+''',
     }, executable = False)
 
 m4_download = repository_rule(

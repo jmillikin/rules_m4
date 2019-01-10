@@ -60,7 +60,10 @@ cc_library(
         "lib/printf-parse.c",
         "lib/printf-args.c",
     ],
-    copts = ["-UDEBUG"],
+    copts = [
+        "-UDEBUG",
+        "-Wno-unused-function",
+    ],
     textual_hdrs = [
         "lib/regex_internal.c",
         "lib/regcomp.c",

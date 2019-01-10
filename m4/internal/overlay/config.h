@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 extern char **environ;
 
@@ -19,11 +20,15 @@ extern char **environ;
 
 #define _GL_ARG_NONNULL(x)
 #define _GL_ATTRIBUTE_FORMAT_PRINTF(x,y)
-#define _GL_ATTRIBUTE_PURE __attribute__ ((pure))
+#define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
 #define _GL_EXTERN_INLINE extern inline
 #define _GL_INLINE inline
 #define _GL_INLINE_HEADER_BEGIN
 #define _GL_INLINE_HEADER_END
+
+#if __GNUC__
+# define _Noreturn __attribute__ ((__noreturn__))
+#endif
 
 #define GNULIB_CLOSE_STREAM 1
 #define GNULIB_FILENAMECAT 1
@@ -33,7 +38,13 @@ extern char **environ;
 #define HAVE_WORKING_O_NOFOLLOW 1
 #define RENAME_OPEN_FILE_WORKS 0
 
-#define SYSCMD_SHELL getenv("M4_SYSCMD_SHELL")
+#define SYSCMD_SHELL m4_syscmd_shell()
+
+static inline const char* m4_syscmd_shell() {
+    const char *from_env = getenv("M4_SYSCMD_SHELL");
+    if (from_env) { return from_env; }
+    return "/bin/sh";
+}
 
 char *secure_getenv (char const *name);
 int vasprintf(char **strp, const char *fmt, va_list ap);
