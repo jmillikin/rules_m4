@@ -1,7 +1,7 @@
 load("//:m4.bzl", "M4_VERSIONS")
-load("//m4:toolchain.bzl", "m4_toolchain")
+load("//m4:toolchain.bzl", "m4_toolchain_info")
 
-[m4_toolchain(
+[m4_toolchain_info(
     name = "v{}".format(version),
     m4 = "@m4_v{}//bin:m4".format(version),
     tags = ["manual"],

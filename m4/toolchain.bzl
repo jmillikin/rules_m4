@@ -16,7 +16,7 @@
 
 M4_TOOLCHAIN = "@io_bazel_rules_m4//m4:toolchain_type"
 
-def _m4_toolchain(ctx):
+def _m4_toolchain_info(ctx):
     (inputs, _, input_manifests) = ctx.resolve_command(
         command = "m4",
         tools = [ctx.attr.m4],
@@ -33,8 +33,8 @@ def _m4_toolchain(ctx):
         ),
     ]
 
-m4_toolchain = rule(
-    _m4_toolchain,
+m4_toolchain_info = rule(
+    _m4_toolchain_info,
     attrs = {
         "m4": attr.label(
             executable = True,
@@ -51,6 +51,20 @@ m4_toolchain = rule(
             cfg = "host",
         ),
     },
+)
+
+def _m4_toolchain(ctx):
+    m4 = m4_context(ctx)
+    return [
+        DefaultInfo(files = m4.inputs),
+        platform_common.TemplateVariableInfo({
+            "M4": m4.executable.path,
+        }),
+    ]
+
+m4_toolchain = rule(
+    _m4_toolchain,
+    toolchains = [M4_TOOLCHAIN],
 )
 
 def m4_context(ctx):

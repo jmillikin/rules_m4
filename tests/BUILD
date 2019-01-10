@@ -7,6 +7,17 @@ m4(
     opts = ["--synclines"],
 )
 
+genrule(
+    name = "genrule_test",
+    srcs = ["expansion_test.in"],
+    outs = ["genrule_test.txt"],
+    cmd = """
+cp $(location expansion_test.in) genrule_test.in
+$(M4) --synclines genrule_test.in > $@
+""",
+    toolchains = ["@io_bazel_rules_m4//m4:toolchain"],
+)
+
 m4_template(
     name = "template_1",
     srcs = ["template_1.m4"],
@@ -28,6 +39,7 @@ filegroup(
     name = "testdata",
     srcs = [
         ":expansion_test",
+        ":genrule_test",
         ":template_test",
     ],
 )

@@ -22,6 +22,14 @@ Hello, world!
     ASSERT_EQ(got, EXPECT);
 }
 
+TEST(RulesM4, GenruleTest) {
+    const char EXPECT[] = R"(#line 2 "genrule_test.in"
+Hello, world!
+)";
+    const auto got = ReadFile("./tests/genrule_test.txt");
+    ASSERT_EQ(got, EXPECT);
+}
+
 TEST(RulesM4, RecoveryTest) {
     const char EXPECT[] = R"(from template_1: Hello, world!
 from template_2: Hello, world (again)!
