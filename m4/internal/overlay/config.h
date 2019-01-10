@@ -1,3 +1,5 @@
+#include "lib/config.hin"
+
 #include <fcntl.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -20,15 +22,6 @@ extern char **environ;
 
 #define _GL_ARG_NONNULL(x)
 #define _GL_ATTRIBUTE_FORMAT_PRINTF(x,y)
-#define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
-#define _GL_EXTERN_INLINE extern inline
-#define _GL_INLINE inline
-#define _GL_INLINE_HEADER_BEGIN
-#define _GL_INLINE_HEADER_END
-
-#if __GNUC__
-# define _Noreturn __attribute__ ((__noreturn__))
-#endif
 
 #define GNULIB_CLOSE_STREAM 1
 #define GNULIB_FILENAMECAT 1

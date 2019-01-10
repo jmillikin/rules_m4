@@ -1,6 +1,7 @@
 cc_library(
     name = "config_h",
     hdrs = glob(["stub-config/*.h"]),
+    textual_hdrs = ["lib/config.hin"],
     includes = ["stub-config"],
     visibility = ["//bin:__pkg__"],
 )
