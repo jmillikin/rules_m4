@@ -179,22 +179,32 @@ def _m4_download(ctx):
     ctx.file("WORKSPACE", "workspace(name = {name})\n".format(name = repr(ctx.name)))
     ctx.symlink(ctx.attr._overlay_BUILD, "BUILD.bazel")
     ctx.symlink(ctx.attr._overlay_bin_BUILD, "bin/BUILD.bazel")
-    ctx.symlink(ctx.attr._overlay_configmake_h, "stub-config/configmake.h")
-    ctx.template("stub-config/config.h", ctx.attr._overlay_config_h, {
+    ctx.file("stub-config/configmake.h", "")
+    ctx.symlink(ctx.attr._m4_syscmd_shell_h, "stub-config/m4_syscmd_shell.h")
+    ctx.template("stub-config/gnulib_common_config.h", ctx.attr._common_config_h, {
         "{VERSION}": version,
     })
 
-    # Hardcode getprogname() to "m4" to avoid digging into the gnulib shims.
+    ctx.symlink(ctx.attr._darwin_config_h, "gnulib-darwin/config/config.h")
+    ctx.symlink(ctx.attr._linux_config_h, "gnulib-linux/config/config.h")
+    ctx.symlink(ctx.attr._windows_config_h, "gnulib-windows/config/config.h")
+
+    # error.c depends on the gnulib libc shims to inject gnulib macros. Fix this
+    # by injecting explicit include directives.
     ctx.template("lib/error.c", "lib/error.c", substitutions = {
-        "#define program_name getprogname ()": '#define program_name "m4"',
+        '#include "error.h"\n': "\n".join([
+            '#include "error.h"',
+            '#include "build-aux/snippet/arg-nonnull.h"',
+        ]),
     }, executable = False)
 
     # Stub out the sandbox-escaping charset alias loader.
     ctx.template("lib/localcharset.c", "lib/localcharset.c", substitutions = {
         "get_charset_aliases (void)": '''
 get_charset_aliases (void) { return ""; }
-static const char *LIBDIR = "";
-static const char * _old_get_charset_aliases (void)
+#define LIBDIR ""
+static const char * _replaced_get_charset_aliases (void) _GL_UNUSED;
+static const char * _replaced_get_charset_aliases (void)
 ''',
     }, executable = False)
 
@@ -210,12 +220,24 @@ m4_download = repository_rule(
             default = "@io_bazel_rules_m4//m4/internal:overlay/m4_bin.BUILD",
             single_file = True,
         ),
-        "_overlay_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/config.h",
+        "_m4_syscmd_shell_h": attr.label(
+            default = "@io_bazel_rules_m4//m4/internal:overlay/m4_syscmd_shell.h",
             single_file = True,
         ),
-        "_overlay_configmake_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/configmake.h",
+        "_common_config_h": attr.label(
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_common_config.h",
+            single_file = True,
+        ),
+        "_darwin_config_h": attr.label(
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_darwin_config.h",
+            single_file = True,
+        ),
+        "_linux_config_h": attr.label(
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_linux_config.h",
+            single_file = True,
+        ),
+        "_windows_config_h": attr.label(
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_windows_config.h",
             single_file = True,
         ),
     },
