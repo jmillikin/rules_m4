@@ -49,6 +49,7 @@ cc_test(
     srcs = ["m4_test.cc"],
     data = [":testdata"],
     deps = [
+        "@bazel_tools//tools/cpp/runfiles",
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
