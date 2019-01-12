@@ -16,9 +16,13 @@
  * SPDX-License-Identifier: Apache-2.0
 **/
 
-#include <stdio.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/stat.h>
+
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 int main(int argc, char **argv) {
     int out_fd, rc;
@@ -28,7 +32,7 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    out_fd = open(argv[1], O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR);
+    out_fd = open(argv[1], O_CREAT | O_WRONLY, S_IREAD | S_IWRITE);
     if (out_fd == -1) {
         perror("open");
         return 1;
