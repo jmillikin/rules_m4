@@ -34,6 +34,7 @@ _VERSION_URLS = {
     "1.4.18": {
         "urls": ["https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz"],
         "sha256": "f2c1e86ca0a404ff281631bdc8377638992744b175afb806e25871a24a934e07",
+        "overwrite": ["vasnprintf.c"],
     },
 }
 
@@ -189,6 +190,21 @@ def _m4_download(ctx):
     ctx.symlink(ctx.attr._linux_config_h, "gnulib-linux/config/config.h")
     ctx.symlink(ctx.attr._windows_config_h, "gnulib-windows/config/config.h")
 
+    # Overwrite m4's vasnprintf.c to pick up two important bug fixes.
+    #
+    # * Fix heap overflow in float formatting
+    #
+    #   http://git.savannah.gnu.org/cgit/gnulib.git/commit/lib/vasnprintf.c?id=278b4175c9d7dd47c1a3071554aac02add3b3c35
+    #
+    # * Fix crash on macOS 10.13 due to '%n' in a writable format string
+    #   passed to `sprintf()`.
+    #
+    #   http://git.savannah.gnu.org/cgit/gnulib.git/commit/lib/vasnprintf.c?id=c41f233c4c38e84023a16339782ee306f03e7f59
+    #
+    # Current vendor copy is @ e6633650a245a4e5bfe2e3de92be93a623eef7a9 (2018-12-31)
+    if "vasnprintf.c" in source["overwrite"]:
+      ctx.template("lib/vasnprintf.c", ctx.attr._vasnprintf_c)
+
     # error.c depends on the gnulib libc shims to inject gnulib macros. Fix this
     # by injecting explicit include directives.
     ctx.template("lib/error.c", "lib/error.c", substitutions = {
@@ -229,15 +245,19 @@ m4_download = repository_rule(
             single_file = True,
         ),
         "_darwin_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_darwin_config.h",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib-darwin/config.h",
             single_file = True,
         ),
         "_linux_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_linux_config.h",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib-linux/config.h",
             single_file = True,
         ),
         "_windows_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_windows_config.h",
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib-windows/config.h",
+            single_file = True,
+        ),
+        "_vasnprintf_c": attr.label(
+            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib/vasnprintf.c",
             single_file = True,
         ),
     },
