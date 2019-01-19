@@ -22,11 +22,7 @@ m4_register_toolchains()
 ```
 """
 
-load(
-    "//m4:toolchain.bzl",
-    _M4_TOOLCHAIN = "M4_TOOLCHAIN",
-    _m4_context = "m4_context",
-)
+# region Versions {{{
 
 _LATEST = "1.4.18"
 
@@ -38,51 +34,137 @@ _VERSION_URLS = {
     },
 }
 
-M4_VERSIONS = list(_VERSION_URLS)
+def _check_version(version):
+    if version not in _VERSION_URLS:
+        fail("GNU M4 version {} not supported by rules_m4.".format(repr(version)))
 
-def _m4_env(m4):
+# endregion }}}
+
+# region Toolchain {{{
+
+_TOOLCHAIN_TYPE = "@io_bazel_rules_m4//m4:toolchain_type"
+
+_ToolchainInfo = provider(fields = ["files", "vars", "m4_executable"])
+
+_Internal = provider()
+
+def _m4_toolchain_info(ctx):
+    toolchain = _ToolchainInfo(
+        m4_executable = ctx.executable.m4,
+        files = depset([ctx.executable.m4]),
+        vars = {"M4": ctx.executable.m4.path},
+    )
+    return [
+        platform_common.ToolchainInfo(m4_toolchain = toolchain),
+        platform_common.TemplateVariableInfo(toolchain.vars),
+    ]
+
+m4_toolchain_info = rule(
+    _m4_toolchain_info,
+    attrs = {
+        "m4": attr.label(
+            executable = True,
+            cfg = "host",
+        ),
+    },
+)
+
+def _m4_toolchain_alias(ctx):
+    toolchain = ctx.toolchains[_TOOLCHAIN_TYPE].m4_toolchain
+    return [
+        DefaultInfo(files = toolchain.files),
+        toolchain,
+        platform_common.TemplateVariableInfo(toolchain.vars),
+        _Internal(
+            capture_stdout = ctx.executable._capture_stdout,
+            deny_shell = ctx.executable._deny_shell,
+        ),
+    ]
+
+m4_toolchain_alias = rule(
+    _m4_toolchain_alias,
+    toolchains = [_TOOLCHAIN_TYPE],
+    attrs = {
+        "_capture_stdout": attr.label(
+            executable = True,
+            default = "//m4/internal:capture_stdout",
+            cfg = "host",
+        ),
+        "_deny_shell": attr.label(
+            executable = True,
+            default = "//m4/internal:deny_shell",
+            cfg = "host",
+        ),
+    },
+)
+
+def m4_register_toolchains(version = _LATEST):
+    _check_version(version)
+    repo_name = "m4_v{}".format(version)
+    if repo_name not in native.existing_rules().keys():
+        m4_repository(
+            name = repo_name,
+            version = version,
+        )
+    native.register_toolchains("@io_bazel_rules_m4//m4/toolchains:v{}".format(version))
+
+# endregion }}}
+
+m4_common = struct(
+    VERSIONS = list(_VERSION_URLS),
+    ToolchainInfo = _ToolchainInfo,
+    TOOLCHAIN_TYPE = _TOOLCHAIN_TYPE,
+)
+
+# region Build Rules {{{
+
+def _m4_env(internal):
     return {
-        "M4_SYSCMD_SHELL": m4.toolchain._m4_internal.deny_shell.path,
+        "M4_SYSCMD_SHELL": internal.deny_shell.path,
     }
 
-def _m4_impl(ctx):
-    m4 = _m4_context(ctx)
+# region rule(m4) {{{
+
+def _m4(ctx):
+    toolchain = ctx.attr._m4_toolchain[m4_common.ToolchainInfo]
+    internal = ctx.attr._m4_toolchain[_Internal]
     out = ctx.outputs.out
     if out == None:
         out = ctx.actions.declare_file(ctx.attr.name)
 
     args = ctx.actions.args()
-    args.add_all([out, m4.executable])
-    inputs = m4.inputs + ctx.files.srcs
-    if ctx.attr.template:
-        args.add("--reload-state", ctx.file.template.path)
-        inputs += depset([ctx.file.template])
+    args.add_all([out, toolchain.m4_executable.path])
+    inputs = toolchain.files + ctx.files.srcs + depset([
+        internal.capture_stdout,
+        internal.deny_shell,
+    ])
+    if ctx.attr.reload_state:
+        args.add("--reload-state", ctx.file.reload_state.path)
+        inputs += depset([ctx.file.reload_state])
     args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
     ctx.actions.run(
-        executable = m4.toolchain._m4_internal.capture_stdout,
+        executable = internal.capture_stdout,
         arguments = [args],
         inputs = inputs,
-        input_manifests = m4.input_manifests,
         outputs = [out],
-        tools = [m4.executable],
-        env = _m4_env(m4),
-        mnemonic = "ExpandTemplate",
-        progress_message = "Expanding M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
+        env = _m4_env(internal),
+        mnemonic = "M4",
+        progress_message = "Expanding {}".format(ctx.label),
     )
     return DefaultInfo(
         files = depset([out]),
     )
 
 m4 = rule(
-    _m4_impl,
+    _m4,
     attrs = {
         "srcs": attr.label_list(
             allow_empty = False,
             mandatory = True,
             allow_files = True,
         ),
-        "template": attr.label(
+        "reload_state": attr.label(
             mandatory = False,
             allow_single_file = [".m4f"],
         ),
@@ -90,8 +172,10 @@ m4 = rule(
             allow_empty = True,
         ),
         "out": attr.output(),
+        "_m4_toolchain": attr.label(
+            default = "//m4:toolchain",
+        ),
     },
-    toolchains = [_M4_TOOLCHAIN],
 )
 """Expand a set of M4 sources.
 
@@ -104,69 +188,83 @@ m4(
 ```
 """
 
-def _m4_template_impl(ctx):
-    m4 = _m4_context(ctx)
+# endregion }}}
+
+# region rule(m4_frozen_state) {{{
+
+def _m4_frozen_state(ctx):
+    m4_toolchain = ctx.attr._m4_toolchain[m4_common.ToolchainInfo]
+    internal = ctx.attr._m4_toolchain[_Internal]
+
     out = ctx.actions.declare_file(ctx.attr.name + ".m4f")
 
     args = ctx.actions.args()
+    args.add_all(["m4-stdout", m4_toolchain.m4_executable.path])
+
     args.add("--freeze-state", out.path)
-    inputs = m4.inputs + ctx.files.srcs
-    if ctx.attr.base:
-        args.add("--reload-state", ctx.file.base.path)
-        inputs += depset([ctx.file.base])
+    inputs = m4_toolchain.files + ctx.files.srcs + depset([
+        internal.capture_stdout,
+        internal.deny_shell,
+    ])
+    if ctx.attr.reload_state:
+        args.add("--reload-state", ctx.file.reload_state.path)
+        inputs += depset([ctx.file.reload_state])
     args.add_all(ctx.attr.opts)
     args.add_all(ctx.files.srcs)
     ctx.actions.run(
-        executable = m4.executable,
+        executable = internal.capture_stdout,
         arguments = [args],
         inputs = inputs,
-        input_manifests = m4.input_manifests,
         outputs = [out],
-        env = _m4_env(m4),
-        mnemonic = "ParseTemplate",
-        progress_message = "Parsing M4 template {} ({} files)".format(ctx.label, len(ctx.files.srcs)),
+        env = _m4_env(internal),
+        mnemonic = "M4",
+        progress_message = "Freezing {}".format(ctx.label),
     )
     return DefaultInfo(files = depset([out]))
 
-m4_template = rule(
-    _m4_template_impl,
+m4_frozen_state = rule(
+    _m4_frozen_state,
     attrs = {
         "srcs": attr.label_list(
             allow_empty = False,
             mandatory = True,
             allow_files = [".m4"],
         ),
-        "base": attr.label(
+        "reload_state": attr.label(
             mandatory = False,
             allow_single_file = [".m4f"],
         ),
         "opts": attr.string_list(
             allow_empty = True,
         ),
+        "_m4_toolchain": attr.label(
+            default = "//m4:toolchain",
+        ),
     },
-    toolchains = [_M4_TOOLCHAIN],
 )
 """Compile a set of M4 sources into a shared template.
 
 ```python
-load("@io_bazel_rules_m4//m4:m4.bzl", "m4", "m4_template")
-m4_template(
+load("@io_bazel_rules_m4//m4:m4.bzl", "m4", "m4_frozen_state")
+m4_frozen_state(
     name = "tmpl",
     srcs = ["tmpl.m4"],
 )
 m4(
     name = "hello.txt",
     srcs = ["hello.in.txt"],
-    template = ":tmpl",
+    reload_state = ":tmpl",
 )
 ```
 """
 
-def _check_version(version):
-    if version not in _VERSION_URLS:
-        fail("GNU M4 version {} not supported by rules_m4.".format(repr(version)))
+# endregion }}}
 
-def _m4_download(ctx):
+# endregion }}}
+
+# region Repository Rules {{{
+
+def _m4_repository(ctx):
     version = ctx.attr.version
     _check_version(version)
     source = _VERSION_URLS[version]
@@ -203,7 +301,7 @@ def _m4_download(ctx):
     #
     # Current vendor copy is @ e6633650a245a4e5bfe2e3de92be93a623eef7a9 (2018-12-31)
     if "vasnprintf.c" in source["overwrite"]:
-      ctx.template("lib/vasnprintf.c", ctx.attr._vasnprintf_c)
+        ctx.template("lib/vasnprintf.c", ctx.attr._vasnprintf_c)
 
     # error.c depends on the gnulib libc shims to inject gnulib macros. Fix this
     # by injecting explicit include directives.
@@ -224,51 +322,43 @@ static const char * _replaced_get_charset_aliases (void)
 ''',
     }, executable = False)
 
-m4_download = repository_rule(
-    _m4_download,
+m4_repository = repository_rule(
+    _m4_repository,
     attrs = {
         "version": attr.string(mandatory = True),
         "_overlay_BUILD": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/m4.BUILD",
+            default = "//m4/internal:overlay/m4.BUILD",
             single_file = True,
         ),
         "_overlay_bin_BUILD": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/m4_bin.BUILD",
+            default = "//m4/internal:overlay/m4_bin.BUILD",
             single_file = True,
         ),
         "_m4_syscmd_shell_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/m4_syscmd_shell.h",
+            default = "//m4/internal:overlay/m4_syscmd_shell.h",
             single_file = True,
         ),
         "_common_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib_common_config.h",
+            default = "//m4/internal:overlay/gnulib_common_config.h",
             single_file = True,
         ),
         "_darwin_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib-darwin/config.h",
+            default = "//m4/internal:overlay/gnulib-darwin/config.h",
             single_file = True,
         ),
         "_linux_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib-linux/config.h",
+            default = "//m4/internal:overlay/gnulib-linux/config.h",
             single_file = True,
         ),
         "_windows_config_h": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib-windows/config.h",
+            default = "//m4/internal:overlay/gnulib-windows/config.h",
             single_file = True,
         ),
         "_vasnprintf_c": attr.label(
-            default = "@io_bazel_rules_m4//m4/internal:overlay/gnulib/vasnprintf.c",
+            default = "//m4/internal:overlay/gnulib/vasnprintf.c",
             single_file = True,
         ),
     },
 )
 
-def m4_register_toolchains(version = _LATEST):
-    _check_version(version)
-    repo_name = "m4_v{}".format(version)
-    if repo_name not in native.existing_rules().keys():
-        m4_download(
-            name = repo_name,
-            version = version,
-        )
-    native.register_toolchains("@io_bazel_rules_m4//m4/toolchains:v{}_toolchain".format(version))
+# endregion }}}

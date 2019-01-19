@@ -1,4 +1,4 @@
-load("//m4:m4.bzl", "m4", "m4_template")
+load("@io_bazel_rules_m4//m4:m4.bzl", "m4", "m4_frozen_state")
 
 m4(
     name = "expansion_test",
@@ -18,21 +18,21 @@ $(M4) --synclines genrule_test.in > $@
     toolchains = ["@io_bazel_rules_m4//m4:toolchain"],
 )
 
-m4_template(
+m4_frozen_state(
     name = "template_1",
     srcs = ["template_1.m4"],
 )
 
-m4_template(
+m4_frozen_state(
     name = "template_2",
     srcs = ["template_2.m4"],
-    base = ":template_1",
+    reload_state = ":template_1",
 )
 
 m4(
     name = "template_test",
     srcs = ["template_test.in"],
-    template = ":template_2",
+    reload_state = ":template_2",
 )
 
 filegroup(
