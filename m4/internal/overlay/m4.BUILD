@@ -186,12 +186,14 @@ _GNULIB_WINDOWS_SRCS = [
     "lib/wcrtomb.c",
 ]
 
-# https://github.com/bazelbuild/bazel/issues/6337
-_GNULIB_WINDOWS_SRCS.extend(_GNULIB_HDRS)
-
 cc_library(
     name = "gnulib",
-    srcs = _GNULIB_SRCS + select({
+    # Include _GNULIB_HDRS in the sources list to work around a bug in C++
+    # strict header inclusion checking when building without a sandbox.
+    #
+    # https://github.com/bazelbuild/bazel/issues/3828
+    # https://github.com/bazelbuild/bazel/issues/6337
+    srcs = _GNULIB_SRCS + _GNULIB_HDRS + select({
         "@bazel_tools//src/conditions:darwin": _GNULIB_DARWIN_SRCS,
         "@bazel_tools//src/conditions:windows": _GNULIB_WINDOWS_SRCS,
         "//conditions:default": _GNULIB_LINUX_SRCS,
