@@ -202,8 +202,17 @@
 #define mode_t int
 #define nlink_t int
 #define pid_t int
-#define ssize_t int
 #define uid_t int
 
 #include <gnulib_common_config.h>
 #include <m4_syscmd_shell.h>
+
+#include <BaseTsd.h>
+#define ssize_t SSIZE_T
+#define uintptr_t DWORD_PTR
+
+#include <process.h>
+
+char *mkdtemp(char *);
+int mkstemp(char *);
+char *secure_getenv (char const *name);

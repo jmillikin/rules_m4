@@ -434,7 +434,7 @@ _WINDOWS_AC_SUBST = {
     "@REPLACE_LSEEK@": "0",
     "@GNULIB_PIPE@": "0",
     "@HAVE_PIPE@": "1",
-    "@GNULIB_PIPE2@": "0",
+    "@GNULIB_PIPE2@": "1",
     "@HAVE_PIPE2@": "0",
     "@REPLACE_PREAD@": "0",
     "@HAVE_PREAD@": "1",
@@ -567,7 +567,7 @@ _WINDOWS_AC_SUBST = {
     "@HAVE_WCSWIDTH@": "1",
 
     # wctype.h
-    "@NEXT_WCTYPE_H@": "<gnulib-system-libc/wchar.h>",
+    "@NEXT_WCTYPE_H@": "<gnulib-system-libc/wctype.h>",
     "@HAVE_WCTYPE_H@": "1",
     "@HAVE_ISWCNTRL@": "1",
     "@REPLACE_ISWCNTRL@": "0",
@@ -576,7 +576,7 @@ _WINDOWS_AC_SUBST = {
     "@HAVE_ISWBLANK@": "1",
     "@REPLACE_ISWBLANK@": "0",
     "@HAVE_WCTYPE_T@": "1",
-    "@GNULIB_WCTYPE@": "0",
+    "@GNULIB_WCTYPE@": "1",
     "@GNULIB_ISWCTYPE@": "0",
     "@HAVE_WCTRANS_T@": "1",
     "@GNULIB_WCTRANS@": "0",

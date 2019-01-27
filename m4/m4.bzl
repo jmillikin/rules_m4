@@ -322,6 +322,12 @@ static const char * _replaced_get_charset_aliases (void)
 ''',
     }, executable = False)
 
+    # Fix a mismatch between _Noreturn and __attribute_noreturn__ when
+    # building with a C11-aware GCC.
+    ctx.template("lib/obstack.c", "lib/obstack.c", substitutions = {
+        "static _Noreturn void": "static _Noreturn __attribute_noreturn__ void",
+    })
+
 m4_repository = repository_rule(
     _m4_repository,
     attrs = {

@@ -186,6 +186,24 @@ _GNULIB_WINDOWS_SRCS = [
     "lib/wcrtomb.c",
 ]
 
+_COPTS = select({
+    "@bazel_tools//src/conditions:windows_msvc": [
+        # By default, MSVC doesn't fail or even warn when an undefined function
+        # is called. This check is vital when building gnulib because of how it
+        # shims in its own malloc functions.
+        #
+        # C4013: 'function' undefined; assuming extern returning int
+        "/we4013",
+
+        # Silence this style lint because gnulib freely violates it, and chances
+        # of the GNU developers ever caring about MSVC style guidelines are low.
+        #
+        # C4116: unnamed type definition in parentheses
+        "/wd4116",
+    ],
+    "//conditions:default": [],
+})
+
 cc_library(
     name = "gnulib",
     # Include _GNULIB_HDRS in the sources list to work around a bug in C++
@@ -199,6 +217,7 @@ cc_library(
         "//conditions:default": _GNULIB_LINUX_SRCS,
     }),
     hdrs = _GNULIB_HDRS,
+    copts = _COPTS,
     strip_include_prefix = "lib",
     textual_hdrs = [
         "lib/regex_internal.c",
@@ -220,7 +239,7 @@ cc_library(
         "src/*.c",
         "src/*.h",
     ]),
-    copts = ["-UDEBUG"],
+    copts = _COPTS + ["-UDEBUG"],
     visibility = ["//bin:__pkg__"],
     deps = [
         ":config_h",
