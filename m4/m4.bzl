@@ -328,6 +328,16 @@ static const char * _replaced_get_charset_aliases (void)
         "static _Noreturn void": "static _Noreturn __attribute_noreturn__ void",
     })
 
+    # Prevent LF -> CRLF conversion on Windows. This deviates from the OS
+    # standard behavior to fit with the generally UNIX-ish assumptions made
+    # by M4 clients (notably Bison).
+    ctx.template("src/output.c", "src/output.c", substitutions = {
+        "output_file = stdout;": """
+output_file = stdout;
+SET_BINARY(STDOUT_FILENO);
+""",
+    })
+
 m4_repository = repository_rule(
     _m4_repository,
     attrs = {
