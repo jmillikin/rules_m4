@@ -26,9 +26,18 @@ m4_register_toolchains()
 
 _LATEST = "1.4.18"
 
+_MIRRORS = [
+    "https://mirror.bazel.build/ftp.gnu.org/gnu/m4/",
+    "https://mirrors.kernel.org/gnu/m4/",
+    "https://ftp.gnu.org/gnu/m4/",
+]
+
+def _urls(filename):
+    return [m + filename for m in _MIRRORS]
+
 _VERSION_URLS = {
     "1.4.18": {
-        "urls": ["https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz"],
+        "urls": _urls("m4-1.4.18.tar.xz"),
         "sha256": "f2c1e86ca0a404ff281631bdc8377638992744b175afb806e25871a24a934e07",
         "overwrite": ["vasnprintf.c"],
     },
