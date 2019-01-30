@@ -28,7 +28,7 @@ _LATEST = "1.4.18"
 
 _VERSION_URLS = {
     "1.4.18": {
-        "urls": ["https://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz"],
+        "urls": ["https://mirrors.kernel.org/gnu/m4/m4-1.4.18.tar.xz"],
         "sha256": "f2c1e86ca0a404ff281631bdc8377638992744b175afb806e25871a24a934e07",
         "overwrite": ["vasnprintf.c"],
     },
