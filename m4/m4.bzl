@@ -39,7 +39,7 @@ _VERSION_URLS = {
     "1.4.18": {
         "urls": _urls("m4-1.4.18.tar.xz"),
         "sha256": "f2c1e86ca0a404ff281631bdc8377638992744b175afb806e25871a24a934e07",
-        "overwrite": ["vasnprintf.c"],
+        "overwrite": ["vasnprintf.c", "xalloc-oversized.h"],
     },
 }
 
@@ -312,6 +312,26 @@ def _m4_repository(ctx):
     if "vasnprintf.c" in source["overwrite"]:
         ctx.template("lib/vasnprintf.c", ctx.attr._vasnprintf_c)
 
+    # Overwrite m4's xalloc-oversized.h to pick up a bug fix for Clang on Linux.
+    #
+    # Context:
+    # * https://llvm.org/bugs/show_bug.cgi?id=16404
+    # * https://github.com/jmillikin/rules_m4/issues/4
+    #
+    # Current vendor copy is @ e6633650a245a4e5bfe2e3de92be93a623eef7a9 (2018-12-31)
+    if "xalloc-oversized.h" in source["overwrite"]:
+        ctx.template("lib/xalloc-oversized.h", ctx.attr._xalloc_oversized_h)
+
+    # gnulib inspects inner details of FILE* based on hard-coded structs defined
+    # for a handful of target platforms. Disable the whole mess so M4 can be
+    # built with musl libc.
+    #
+    # Context:
+    # * https://wiki.musl-libc.org/faq.html#Q:-I'm-getting-a-gnulib-error
+    # * https://github.com/jmillikin/rules_m4/issues/4
+    ctx.file("lib/fpending.c", "#include <stdio.h>\nsize_t __fpending(FILE *fp) { return 1; }")
+    ctx.file("lib/freadahead.c", "#include <stdio.h>\nsize_t freadahead(FILE *fp) { return 1; }")
+
     # error.c depends on the gnulib libc shims to inject gnulib macros. Fix this
     # by injecting explicit include directives.
     ctx.template("lib/error.c", "lib/error.c", substitutions = {
@@ -381,6 +401,10 @@ m4_repository = repository_rule(
         ),
         "_vasnprintf_c": attr.label(
             default = "//m4/internal:overlay/gnulib/vasnprintf.c",
+            single_file = True,
+        ),
+        "_xalloc_oversized_h": attr.label(
+            default = "//m4/internal:overlay/gnulib/xalloc-oversized.h",
             single_file = True,
         ),
     },

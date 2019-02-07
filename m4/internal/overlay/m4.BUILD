@@ -77,6 +77,7 @@ _GNULIB_HDRS = glob([
 
 _GNULIB_SRCS = [
     "lib/basename-lgpl.c",
+    "lib/binary-io.c",
     "lib/c-stack.c",
     "lib/c-strcasecmp.c",
     "lib/clean-temp.c",
