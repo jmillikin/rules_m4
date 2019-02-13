@@ -14,7 +14,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-load("@io_bazel_rules_m4//m4/internal:gnulib.bzl", "gnulib_windows_shims")
+load("@rules_m4//m4/internal:gnulib.bzl", "gnulib_windows_shims")
 
 cc_library(
     name = "config_h",

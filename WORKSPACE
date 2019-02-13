@@ -1,6 +1,6 @@
-workspace(name = "io_bazel_rules_m4")
+workspace(name = "rules_m4")
 
-load("@io_bazel_rules_m4//m4:m4.bzl", "m4_register_toolchains")
+load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
 
 m4_register_toolchains()
 

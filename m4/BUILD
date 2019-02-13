@@ -1,4 +1,4 @@
-load("//m4:m4.bzl", "m4_toolchain_alias")
+load("@rules_m4//m4/internal:toolchain.bzl", "m4_toolchain_alias")
 
 toolchain_type(
     name = "toolchain_type",

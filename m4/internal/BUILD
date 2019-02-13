@@ -1,4 +1,5 @@
-load("//m4:m4.bzl", "m4_common", "m4_toolchain_info")
+load("@rules_m4//m4:m4.bzl", "m4_common")
+load("@rules_m4//m4/internal:toolchain.bzl", "m4_toolchain_info")
 
 [m4_toolchain_info(
     name = "toolchain_v{}".format(version),
@@ -10,11 +11,11 @@ load("//m4:m4.bzl", "m4_common", "m4_toolchain_info")
 cc_binary(
     name = "capture_stdout",
     srcs = ["capture_stdout.c"],
-    visibility = ["//m4:__pkg__"],
+    visibility = ["//visibility:public"],
 )
 
 cc_binary(
     name = "deny_shell",
     srcs = ["deny_shell.c"],
-    visibility = ["//m4:__pkg__"],
+    visibility = ["//visibility:public"],
 )

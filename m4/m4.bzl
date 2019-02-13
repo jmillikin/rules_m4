@@ -14,13 +14,11 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Bazel build rules for GNU M4.
-
-```python
-load("@io_bazel_rules_m4//m4:m4.bzl", "m4_register_toolchains")
-m4_register_toolchains()
-```
-"""
+load(
+    "@rules_m4//m4/internal:toolchain.bzl",
+    _TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE",
+    _ToolchainInfo = "M4ToolchainInfo",
+)
 
 # region Versions {{{
 
@@ -49,64 +47,6 @@ def _check_version(version):
 
 # endregion }}}
 
-# region Toolchain {{{
-
-_TOOLCHAIN_TYPE = "@io_bazel_rules_m4//m4:toolchain_type"
-
-_ToolchainInfo = provider(fields = ["files", "vars", "m4_executable"])
-
-_Internal = provider()
-
-def _m4_toolchain_info(ctx):
-    toolchain = _ToolchainInfo(
-        m4_executable = ctx.executable.m4,
-        files = depset([ctx.executable.m4]),
-        vars = {"M4": ctx.executable.m4.path},
-    )
-    return [
-        platform_common.ToolchainInfo(m4_toolchain = toolchain),
-        platform_common.TemplateVariableInfo(toolchain.vars),
-    ]
-
-m4_toolchain_info = rule(
-    _m4_toolchain_info,
-    attrs = {
-        "m4": attr.label(
-            executable = True,
-            cfg = "host",
-        ),
-    },
-)
-
-def _m4_toolchain_alias(ctx):
-    toolchain = ctx.toolchains[_TOOLCHAIN_TYPE].m4_toolchain
-    return [
-        DefaultInfo(files = toolchain.files),
-        toolchain,
-        platform_common.TemplateVariableInfo(toolchain.vars),
-        _Internal(
-            capture_stdout = ctx.executable._capture_stdout,
-            deny_shell = ctx.executable._deny_shell,
-        ),
-    ]
-
-m4_toolchain_alias = rule(
-    _m4_toolchain_alias,
-    toolchains = [_TOOLCHAIN_TYPE],
-    attrs = {
-        "_capture_stdout": attr.label(
-            executable = True,
-            default = "//m4/internal:capture_stdout",
-            cfg = "host",
-        ),
-        "_deny_shell": attr.label(
-            executable = True,
-            default = "//m4/internal:deny_shell",
-            cfg = "host",
-        ),
-    },
-)
-
 def m4_register_toolchains(version = _LATEST):
     _check_version(version)
     repo_name = "m4_v{}".format(version)
@@ -115,9 +55,7 @@ def m4_register_toolchains(version = _LATEST):
             name = repo_name,
             version = version,
         )
-    native.register_toolchains("@io_bazel_rules_m4//m4/toolchains:v{}".format(version))
-
-# endregion }}}
+    native.register_toolchains("@rules_m4//m4/toolchains:v{}".format(version))
 
 m4_common = struct(
     VERSIONS = list(_VERSION_URLS),
@@ -127,42 +65,64 @@ m4_common = struct(
 
 # region Build Rules {{{
 
-def _m4_env(internal):
-    return {
-        "M4_SYSCMD_SHELL": internal.deny_shell.path,
-    }
-
-# region rule(m4) {{{
-
 def _m4(ctx):
-    toolchain = ctx.attr._m4_toolchain[m4_common.ToolchainInfo]
-    internal = ctx.attr._m4_toolchain[_Internal]
-    out = ctx.outputs.out
-    if out == None:
-        out = ctx.actions.declare_file(ctx.attr.name)
+    m4_toolchain = ctx.attr._m4_toolchain[m4_common.ToolchainInfo]
+
+    stdout = ctx.outputs.output
+    if stdout == None:
+        stdout = ctx.actions.declare_file(ctx.attr.name)
+
+    inputs = list(ctx.files.srcs)
+    outputs = [stdout]
 
     args = ctx.actions.args()
-    args.add_all([out, toolchain.m4_executable.path])
-    inputs = toolchain.files + ctx.files.srcs + depset([
-        internal.capture_stdout,
-        internal.deny_shell,
+    args.add_all([
+        stdout.path,
+        m4_toolchain.m4_executable.path,
     ])
+
+    if ctx.outputs.freeze_state:
+        freeze_state = ctx.outputs.freeze_state
+        if freeze_state.extension != "m4f":
+            fail("output file {} is misplaced here (expected .m4f)".format(ctx.attr.freeze_state), "freeze_state")
+        outputs.append(freeze_state)
+        args.add_all([
+            "--freeze-state",
+            freeze_state.path,
+        ])
+
     if ctx.attr.reload_state:
-        args.add("--reload-state", ctx.file.reload_state.path)
-        inputs += depset([ctx.file.reload_state])
-    args.add_all(ctx.attr.opts)
+        inputs.append(ctx.file.reload_state)
+        args.add_all([
+            "--reload-state",
+            ctx.file.reload_state.path,
+        ])
+
+    args.add_all(ctx.attr.m4_options)
     args.add_all(ctx.files.srcs)
+
+    tools = [ctx.executable._capture_stdout]
+    env = {}
+    if "m4_syscmd" not in ctx.attr.features:
+        tools.append(ctx.executable._deny_shell)
+        env["M4_SYSCMD_SHELL"] = ctx.executable._deny_shell.path
+
     ctx.actions.run(
-        executable = internal.capture_stdout,
+        executable = ctx.executable._capture_stdout,
         arguments = [args],
-        inputs = inputs,
-        outputs = [out],
-        env = _m4_env(internal),
+        inputs = depset(
+            direct = inputs,
+            transitive = [m4_toolchain.files],
+        ),
+        outputs = outputs,
+        tools = tools,
+        env = env,
         mnemonic = "M4",
         progress_message = "Expanding {}".format(ctx.label),
     )
+
     return DefaultInfo(
-        files = depset([out]),
+        files = depset(direct = outputs),
     )
 
 m4 = rule(
@@ -173,101 +133,31 @@ m4 = rule(
             mandatory = True,
             allow_files = True,
         ),
+        "output": attr.output(),
+        "freeze_state": attr.output(
+            # Valid file extensions: [".m4f"]
+            #
+            # https://github.com/bazelbuild/bazel/issues/7409
+        ),
         "reload_state": attr.label(
-            mandatory = False,
             allow_single_file = [".m4f"],
         ),
-        "opts": attr.string_list(
-            allow_empty = True,
-        ),
-        "out": attr.output(),
+        "m4_options": attr.string_list(),
         "_m4_toolchain": attr.label(
-            default = "//m4:toolchain",
+            default = "@rules_m4//m4:toolchain",
+        ),
+        "_capture_stdout": attr.label(
+            executable = True,
+            default = "@rules_m4//m4/internal:capture_stdout",
+            cfg = "host",
+        ),
+        "_deny_shell": attr.label(
+            executable = True,
+            default = "@rules_m4//m4/internal:deny_shell",
+            cfg = "host",
         ),
     },
 )
-"""Expand a set of M4 sources.
-
-```python
-load("@io_bazel_rules_m4//m4:m4.bzl", "m4")
-m4(
-    name = "hello.txt",
-    srcs = ["hello.in.txt"],
-)
-```
-"""
-
-# endregion }}}
-
-# region rule(m4_frozen_state) {{{
-
-def _m4_frozen_state(ctx):
-    m4_toolchain = ctx.attr._m4_toolchain[m4_common.ToolchainInfo]
-    internal = ctx.attr._m4_toolchain[_Internal]
-
-    out = ctx.actions.declare_file(ctx.attr.name + ".m4f")
-
-    args = ctx.actions.args()
-    args.add_all(["m4-stdout", m4_toolchain.m4_executable.path])
-
-    args.add("--freeze-state", out.path)
-    inputs = m4_toolchain.files + ctx.files.srcs + depset([
-        internal.capture_stdout,
-        internal.deny_shell,
-    ])
-    if ctx.attr.reload_state:
-        args.add("--reload-state", ctx.file.reload_state.path)
-        inputs += depset([ctx.file.reload_state])
-    args.add_all(ctx.attr.opts)
-    args.add_all(ctx.files.srcs)
-    ctx.actions.run(
-        executable = internal.capture_stdout,
-        arguments = [args],
-        inputs = inputs,
-        outputs = [out],
-        env = _m4_env(internal),
-        mnemonic = "M4",
-        progress_message = "Freezing {}".format(ctx.label),
-    )
-    return DefaultInfo(files = depset([out]))
-
-m4_frozen_state = rule(
-    _m4_frozen_state,
-    attrs = {
-        "srcs": attr.label_list(
-            allow_empty = False,
-            mandatory = True,
-            allow_files = [".m4"],
-        ),
-        "reload_state": attr.label(
-            mandatory = False,
-            allow_single_file = [".m4f"],
-        ),
-        "opts": attr.string_list(
-            allow_empty = True,
-        ),
-        "_m4_toolchain": attr.label(
-            default = "//m4:toolchain",
-        ),
-    },
-)
-"""Compile a set of M4 sources into a shared template.
-
-```python
-load("@io_bazel_rules_m4//m4:m4.bzl", "m4", "m4_frozen_state")
-m4_frozen_state(
-    name = "tmpl",
-    srcs = ["tmpl.m4"],
-)
-m4(
-    name = "hello.txt",
-    srcs = ["hello.in.txt"],
-    reload_state = ":tmpl",
-)
-```
-"""
-
-# endregion }}}
 
 # endregion }}}
 
@@ -373,39 +263,39 @@ m4_repository = repository_rule(
         "version": attr.string(mandatory = True),
         "_overlay_BUILD": attr.label(
             default = "//m4/internal:overlay/m4.BUILD",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_overlay_bin_BUILD": attr.label(
             default = "//m4/internal:overlay/m4_bin.BUILD",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_m4_syscmd_shell_h": attr.label(
             default = "//m4/internal:overlay/m4_syscmd_shell.h",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_common_config_h": attr.label(
             default = "//m4/internal:overlay/gnulib_common_config.h",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_darwin_config_h": attr.label(
             default = "//m4/internal:overlay/gnulib-darwin/config.h",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_linux_config_h": attr.label(
             default = "//m4/internal:overlay/gnulib-linux/config.h",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_windows_config_h": attr.label(
             default = "//m4/internal:overlay/gnulib-windows/config.h",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_vasnprintf_c": attr.label(
             default = "//m4/internal:overlay/gnulib/vasnprintf.c",
-            single_file = True,
+            allow_single_file = True,
         ),
         "_xalloc_oversized_h": attr.label(
             default = "//m4/internal:overlay/gnulib/xalloc-oversized.h",
-            single_file = True,
+            allow_single_file = True,
         ),
     },
 )
