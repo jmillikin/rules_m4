@@ -1,3 +1,4 @@
+{GNULIB_CONFIG_HEADER}
 
 #define WINDOWS_NATIVE
 
@@ -18,6 +19,8 @@
 #pragma include_alias( <gnulib-system-libc/getopt.h>, <getopt.h> )
 #pragma include_alias( <getopt.h>, <gnulib/getopt.h> )
 #pragma include_alias( "getopt.h", "gnulib/getopt.h" )
+
+#pragma include_alias( <getopt-cdefs.h>, <gnulib/getopt-cdefs.h> )
 
 #pragma include_alias( <gnulib-system-libc/langinfo.h>, <langinfo.h> )
 #pragma include_alias( <langinfo.h>, <gnulib/langinfo.h> )
@@ -61,15 +64,17 @@
 #pragma include_alias( <gnulib-system-libc/wctype.h>, <wctype.h> )
 #pragma include_alias( <wctype.h>, <gnulib/wctype.h> )
 
+/******************************************************************************/
+
 #define CHECK_PRINTF_SAFE 1
 #define DBL_EXPBIT0_BIT 20
 #define DBL_EXPBIT0_WORD 1
 #define DOUBLE_SLASH_IS_DISTINCT_ROOT 1
 #define FAULT_YIELDS_SIGBUS 0
-#define FLEXIBLE_ARRAY_MEMBER /**/
 #define FLT_EXPBIT0_BIT 23
 #define FLT_EXPBIT0_WORD 0
 #define FUNC_FFLUSH_STDIN 0
+#define FUNC_MKDIR_DOT_BUG 1
 #define GETTIMEOFDAY_TIMEZONE void
 #define GNULIB_CANONICALIZE_LGPL 1
 #define GNULIB_CLOSE_STREAM 1
@@ -80,6 +85,7 @@
 #define GNULIB_FOPEN_SAFER 1
 #define GNULIB_FSCANF 1
 #define GNULIB_LOCK 1
+#define GNULIB_MSVC_NOTHROW 1
 #define GNULIB_PIPE2_SAFER 1
 #define GNULIB_SCANF 1
 #define GNULIB_SIGPIPE 1
@@ -87,9 +93,9 @@
 #define GNULIB_STRERROR 1
 #define HAVE_ALLOCA 1
 #define HAVE_BTOWC 1
+#define HAVE_CRTDEFS_H 1
 #define HAVE_DECL_ALARM 0
 #define HAVE_DECL_CLEARERR_UNLOCKED 0
-#define HAVE_DECL_DIRFD 0
 #define HAVE_DECL_FEOF_UNLOCKED 0
 #define HAVE_DECL_FERROR_UNLOCKED 0
 #define HAVE_DECL_FFLUSH_UNLOCKED 0
@@ -104,25 +110,20 @@
 #define HAVE_DECL_GETCHAR_UNLOCKED 0
 #define HAVE_DECL_GETC_UNLOCKED 0
 #define HAVE_DECL_GETDTABLESIZE 0
-#define HAVE_DECL_GETENV 1
 #define HAVE_DECL_ISBLANK 1
 #define HAVE_DECL_MBSINIT 1
 #define HAVE_DECL_PROGRAM_INVOCATION_NAME 0
 #define HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME 0
 #define HAVE_DECL_PUTCHAR_UNLOCKED 0
 #define HAVE_DECL_PUTC_UNLOCKED 0
-#define HAVE_DECL_SETENV 0
 #define HAVE_DECL_SIGALTSTACK 0
-#define HAVE_DECL_SLEEP 0
 #define HAVE_DECL_SNPRINTF 1
-#define HAVE_DECL_STRDUP 1
 #define HAVE_DECL_STRERROR_R 0
 #define HAVE_DECL_STRNDUP 0
 #define HAVE_DECL_STRNLEN 1
 #define HAVE_DECL_STRSIGNAL 0
 #define HAVE_DECL_SYS_SIGLIST 0
-#define HAVE_DECL_UNSETENV 0
-#define HAVE_DECL__PUTENV 1
+#define HAVE_DECL__FSEEKI64 1
 #define HAVE_DECL__SNPRINTF 1
 #define HAVE_DECL__SYS_SIGLIST 0
 #define HAVE_DECL___ARGV 1
@@ -145,23 +146,20 @@
 #define HAVE_MATH_H 1
 #define HAVE_MBRTOWC 1
 #define HAVE_MBSTATE_T 1
+#define HAVE_MBTOWC 1
 #define HAVE_MEMORY_H 1
 #define HAVE_MSVC_INVALID_PARAMETER_HANDLER 1
 #define HAVE_RAISE 1
 #define HAVE_SAME_LONG_DOUBLE_AS_DOUBLE 1
-#define HAVE_SEARCH_H 1
-#define HAVE_SETLOCALE 1
 #define HAVE_SIG_ATOMIC_T 1
 #define HAVE_SNPRINTF_RETVAL_C99 1
 #define HAVE_STDINT_H 1
 #define HAVE_STDINT_H_WITH_UINTMAX 1
 #define HAVE_STDLIB_H 1
-#define HAVE_STRDUP 1
 #define HAVE_STRING_H 1
 #define HAVE_STRNLEN 1
 #define HAVE_STRUCT_LCONV_DECIMAL_POINT 1
 #define HAVE_SYS_STAT_H 1
-#define HAVE_SYS_TIMEB_H 1
 #define HAVE_SYS_TYPES_H 1
 #define HAVE_TOWLOWER 1
 #define HAVE_UNSIGNED_LONG_LONG_INT 1
@@ -170,7 +168,6 @@
 #define HAVE_WCRTOMB 1
 #define HAVE_WCSLEN 1
 #define HAVE_WCSNLEN 1
-#define HAVE_WCTOB 1
 #define HAVE_WCTYPE_H 1
 #define HAVE_WINSOCK2_H 1
 #define HAVE_WINT_T 1
@@ -179,13 +176,12 @@
 #define HAVE__BOOL 1
 #define HAVE__FSEEKI64 1
 #define HAVE__FTELLI64 1
-#define HAVE__FTIME 1
 #define HAVE__SET_INVALID_PARAMETER_HANDLER 1
-#define __builtin_expect(e, c) (e)
+#define HAVE___INLINE 1
 #define LDBL_EXPBIT0_BIT 20
 #define LDBL_EXPBIT0_WORD 1
 #define MALLOC_0_IS_NONNULL 1
-#define __USE_MINGW_ANSI_STDIO 1
+# define __USE_MINGW_ANSI_STDIO 1
 #define NEED_PRINTF_DIRECTIVE_A 1
 #define NEED_PRINTF_DOUBLE 1
 #define NEED_PRINTF_ENOMEM 1
@@ -193,26 +189,55 @@
 #define NEED_PRINTF_LONG_DOUBLE 1
 #define PROMOTED_MODE_T mode_t
 #define RENAME_DEST_EXISTS_BUG 1
-#define RENAME_OPEN_FILE_WORKS 0
 #define RENAME_TRAILING_SLASH_DEST_BUG 1
+#define REPLACE_POSIX_SPAWN 1
 #define SIGNAL_SAFE_LIST 1
 #define STDC_HEADERS 1
+#define USER_LABEL_PREFIX
+# define _ALL_SOURCE 1
+# define _DARWIN_C_SOURCE 1
+# define _GNU_SOURCE 1
+# define _NETBSD_SOURCE 1
+# define _OPENBSD_SOURCE 1
+# define _POSIX_PTHREAD_SEMANTICS 1
+# define __STDC_WANT_IEC_60559_ATTRIBS_EXT__ 1
+# define __STDC_WANT_IEC_60559_BFP_EXT__ 1
+# define __STDC_WANT_IEC_60559_DFP_EXT__ 1
+# define __STDC_WANT_IEC_60559_FUNCS_EXT__ 1
+# define __STDC_WANT_IEC_60559_TYPES_EXT__ 1
+# define __STDC_WANT_LIB_EXT2__ 1
+# define __STDC_WANT_MATH_SPEC_FUNCS__ 1
+# define _TANDEM_SOURCE 1
+# define _HPUX_ALT_XOPEN_SOCKET_API 1
+# define __EXTENSIONS__ 1
 #define USE_UNLOCKED_IO 1
-#define HAVE_ISNANL_IN_LIBC 1
+#define _DARWIN_USE_64_BIT_INODE 1
+#define _NETBSD_SOURCE 1
+#define _REGEX_INCLUDE_LIMITS_H 1
+#define _REGEX_LARGE_OFFSETS 1
+#define _USE_STD_STAT 1
+#define __GETOPT_PREFIX rpl_
+#define gid_t int
 #define mode_t int
 #define nlink_t int
 #define pid_t int
+#define re_comp rpl_re_comp
+#define re_compile_fastmap rpl_re_compile_fastmap
+#define re_compile_pattern rpl_re_compile_pattern
+#define re_exec rpl_re_exec
+#define re_match rpl_re_match
+#define re_match_2 rpl_re_match_2
+#define re_search rpl_re_search
+#define re_search_2 rpl_re_search_2
+#define re_set_registers rpl_re_set_registers
+#define re_set_syntax rpl_re_set_syntax
+#define re_syntax_options rpl_re_syntax_options
+#define regcomp rpl_regcomp
+#define regerror rpl_regerror
+#define regexec rpl_regexec
+#define regfree rpl_regfree
+#define restrict /**/
+#define ssize_t int
 #define uid_t int
 
-#include <gnulib_common_config.h>
-#include <m4_syscmd_shell.h>
-
-#include <BaseTsd.h>
-#define ssize_t SSIZE_T
-#define uintptr_t DWORD_PTR
-
-#include <process.h>
-
-char *mkdtemp(char *);
-int mkstemp(char *);
-char *secure_getenv (char const *name);
+{GNULIB_CONFIG_FOOTER}

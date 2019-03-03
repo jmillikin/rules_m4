@@ -16,10 +16,10 @@
 
 TOOLCHAIN_TYPE = "@rules_m4//m4:toolchain_type"
 
-M4ToolchainInfo = provider(fields = ["files", "vars", "m4_executable"])
+ToolchainInfo = provider(fields = ["files", "vars", "m4_executable"])
 
 def _m4_toolchain_info(ctx):
-    toolchain = M4ToolchainInfo(
+    toolchain = ToolchainInfo(
         m4_executable = ctx.executable.m4,
         files = depset(direct = [ctx.executable.m4]),
         vars = {"M4": ctx.executable.m4.path},
@@ -57,7 +57,7 @@ m4_toolchain_alias = rule(
     toolchains = [TOOLCHAIN_TYPE],
     provides = [
         DefaultInfo,
-        M4ToolchainInfo,
+        ToolchainInfo,
         platform_common.TemplateVariableInfo,
     ],
 )

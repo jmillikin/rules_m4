@@ -14,60 +14,38 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_m4//m4/internal:gnulib.bzl", "gnulib_windows_shims")
-
 cc_library(
     name = "config_h",
-    hdrs = glob(["stub-config/*.h"]) + select({
+    hdrs = select({
         "@bazel_tools//src/conditions:darwin": [
-            "gnulib-darwin/config/config.h",
+            "config-darwin/config.h",
         ],
         "@bazel_tools//src/conditions:windows": [
-            "gnulib-windows/config/config.h",
+            "config-windows/config.h",
         ],
         "//conditions:default": [
-            "gnulib-linux/config/config.h",
+            "config-linux/config.h",
         ],
     }),
-    includes = ["stub-config"] + select({
+    includes = select({
         "@bazel_tools//src/conditions:darwin": [
-            "gnulib-darwin/config",
+            "config-darwin",
         ],
         "@bazel_tools//src/conditions:windows": [
-            "gnulib-windows/config",
+            "config-windows",
         ],
         "//conditions:default": [
-            "gnulib-linux/config",
+            "config-linux",
         ],
     }),
-)
-
-gnulib_windows_shims(
-    name = "gnulib_windows_shims_h",
-)
-
-cc_library(
-    name = "build_aux_snippets",
-    srcs = glob(["build-aux/snippet/*.h"]),
-    hdrs = [
-        "build-aux/snippet/unused-parameter.h",
-    ],
-    strip_include_prefix = "build-aux/snippet",
-    textual_hdrs = [
-        "build-aux/snippet/arg-nonnull.h",
-        "build-aux/snippet/c++defs.h",
-        "build-aux/snippet/warn-on-use.h",
-    ],
+    visibility = ["//:__pkg__"],
 )
 
 cc_library(
     name = "gnulib_windows_shims",
-    hdrs = [":gnulib_windows_shims_h"],
-    includes = ["gnulib-windows/shim-libc"],
-    deps = [
-        ":build_aux_snippets",
-        ":config_h",
-    ],
+    hdrs = glob(["config-windows/shim-libc/**/*"]),
+    includes = ["config-windows/shim-libc"],
+    deps = [":config_h"],
 )
 
 _GNULIB_HDRS = glob([
@@ -126,7 +104,11 @@ _GNULIB_SRCS = [
     "lib/xvasprintf.c",
 ]
 
-_GNULIB_DARWIN_SRCS = []
+_GNULIB_DARWIN_SRCS = [
+    "lib/printf-frexp.c",
+    "lib/printf-frexpl.c",
+    "lib/isnanl.c",
+]
 
 _GNULIB_LINUX_SRCS = [
     "lib/binary-io.c",
@@ -158,6 +140,7 @@ _GNULIB_WINDOWS_SRCS = [
     "lib/getopt1.c",
     "lib/getprogname.c",
     "lib/gettimeofday.c",
+    "lib/isnanl.c",
     "lib/localeconv.c",
     "lib/malloc.c",
     "lib/mbrtowc.c",
@@ -177,6 +160,7 @@ _GNULIB_WINDOWS_SRCS = [
     "lib/sigaction.c",
     "lib/sigprocmask.c",
     "lib/snprintf.c",
+    "lib/stat-w32.c",
     "lib/stdio-write.c",
     "lib/strerror-override.c",
     "lib/strerror.c",
@@ -218,32 +202,18 @@ cc_library(
         "//conditions:default": _GNULIB_LINUX_SRCS,
     }),
     hdrs = _GNULIB_HDRS,
-    copts = _COPTS,
+    copts = _COPTS + ["-DHAVE_CONFIG_H"],
     strip_include_prefix = "lib",
     textual_hdrs = [
         "lib/regex_internal.c",
         "lib/regcomp.c",
         "lib/regexec.c",
+        "lib/printf-frexp.c",
+        "lib/isnan.c",
     ],
-    deps = [
-        ":config_h",
-        ":build_aux_snippets",
-    ] + select({
+    visibility = ["//:__pkg__"],
+    deps = [":config_h"] + select({
         "@bazel_tools//src/conditions:windows": [":gnulib_windows_shims"],
         "//conditions:default": [],
     }),
-)
-
-cc_library(
-    name = "m4_lib",
-    srcs = glob([
-        "src/*.c",
-        "src/*.h",
-    ]),
-    copts = _COPTS + ["-UDEBUG"],
-    visibility = ["//bin:__pkg__"],
-    deps = [
-        ":config_h",
-        ":gnulib",
-    ],
 )

@@ -14,11 +14,128 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+_GNULIB_VERSION = "788db09a9f88abbef73c97e8d7291c40455336d8"
+_GNULIB_SHA256 = "27ef79e649c95856e05f82414977f5e05d009310f91916b64806d1c61f913485"
+
+_URL_BASE = "github.com/jmillikin/rules_m4/releases/download/v0.1/gnulib-{}.tar.xz".format(_GNULIB_VERSION)
+
+_GNULIB_URLS = [
+    "https://mirror.bazel.build/" + _URL_BASE,
+    "https://" + _URL_BASE,
+]
+
+_CONFIG_HEADER = """
+#include "gnulib/lib/config.in.h"
+#include "gnulib/lib/arg-nonnull.h"
+
+#define PRODUCT "m4"
+#define PACKAGE "m4"
+#define PACKAGE_BUGREPORT "bug-m4@gnu.org"
+#define PACKAGE_NAME "GNU M4"
+#define PACKAGE_STRING "GNU M4 {M4_VERSION}"
+#define PACKAGE_TARNAME "m4"
+#define PACKAGE_URL "http://www.gnu.org/software/m4/"
+#define PACKAGE_VERSION "{M4_VERSION}"
+#define VERSION "{M4_VERSION}"
+
+#define RENAME_OPEN_FILE_WORKS 0
+#define HAVE_TMPFILE 1
+#define RETSIGTYPE void
+"""
+
+_CONFIG_FOOTER = """
+#include <stdlib.h>
+
+/* Allow SYSCMD_SHELL to be injected at runtime, for users that don't
+ * want arbitrary code execution in their template expansions.
+**/
+#define SYSCMD_SHELL m4_syscmd_shell()
+
+static inline const char* m4_syscmd_shell() {
+    const char *from_env = getenv("M4_SYSCMD_SHELL");
+    if (from_env) { return from_env; }
+    return "/bin/sh";
+}
+
+#if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
+extern char *program_invocation_short_name;
+#endif
+
+#if HAVE_DECL_PROGRAM_INVOCATION_NAME
+extern char *program_invocation_name;
+#endif
+
+#if HAVE_SECURE_GETENV
+char *secure_getenv(char const *name);
+#endif
+"""
+
+def gnulib_overlay(ctx, m4_version):
+    ctx.download_and_extract(
+        url = _GNULIB_URLS,
+        sha256 = _GNULIB_SHA256,
+        output = "gnulib",
+        stripPrefix = "gnulib-" + _GNULIB_VERSION,
+    )
+    ctx.symlink(ctx.attr._gnulib_build, "gnulib/BUILD.bazel")
+
+    config_header = _CONFIG_HEADER.format(
+        M4_VERSION = m4_version,
+    )
+    ctx.template("gnulib/config-darwin/config.h", ctx.attr._gnulib_config_darwin_h, substitutions = {
+        "{GNULIB_CONFIG_HEADER}": config_header,
+        "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
+    }, executable = False)
+    ctx.template("gnulib/config-linux/config.h", ctx.attr._gnulib_config_linux_h, substitutions = {
+        "{GNULIB_CONFIG_HEADER}": config_header,
+        "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
+    }, executable = False)
+    ctx.template("gnulib/config-windows/config.h", ctx.attr._gnulib_config_windows_h, substitutions = {
+        "{GNULIB_CONFIG_HEADER}": config_header,
+        "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
+    }, executable = False)
+
+    for shim in _WINDOWS_STDLIB_SHIMS:
+        in_h = "gnulib/lib/{}.in.h".format(shim.replace("/", "_"))
+        out_h = "gnulib/config-windows/shim-libc/gnulib/{}.h".format(shim)
+        ctx.template(out_h, in_h, substitutions = _WINDOWS_AC_SUBST, executable = False)
+
+    # Older versions of M4 expect gnulib shims for exit() and strstr()
+    ctx.file("gnulib/lib/exit.h", "#include <stdlib.h>")
+    ctx.file("gnulib/lib/strstr.h", "#include <string.h>")
+
+    # gnulib inspects inner details of FILE* based on hard-coded structs defined
+    # for a handful of target platforms. Disable the whole mess so M4 can be
+    # built with musl libc.
+    #
+    # Context:
+    # * https://wiki.musl-libc.org/faq.html#Q:-I'm-getting-a-gnulib-error
+    # * https://github.com/jmillikin/rules_m4/issues/4
+    ctx.file("gnulib/lib/fpending.c", "#include <stdio.h>\nsize_t __fpending(FILE *fp) { return 1; }")
+    ctx.file("gnulib/lib/freadahead.c", "#include <stdio.h>\nsize_t freadahead(FILE *fp) { return 1; }")
+
+    # Stub out the sandbox-escaping charset alias loader.
+    ctx.template("gnulib/lib/localcharset.c", "gnulib/lib/localcharset.c", substitutions = {
+        "get_charset_aliases (void)": '''
+get_charset_aliases (void) { return ""; }
+#define LIBDIR ""
+static const char * _replaced_get_charset_aliases (void) _GL_UNUSED;
+static const char * _replaced_get_charset_aliases (void)
+''',
+    }, executable = False)
+
+    # Fix a mismatch between _Noreturn and __attribute_noreturn__ when
+    # building with a C11-aware GCC.
+    ctx.template("gnulib/lib/obstack.c", "gnulib/lib/obstack.c", substitutions = {
+        "static _Noreturn void": "static _Noreturn __attribute_noreturn__ void",
+    })
+
 _WINDOWS_STDLIB_SHIMS = [
     "alloca",
     "errno",
     "fcntl",
     "getopt",
+    "getopt-cdefs",
     "langinfo",
     "locale",
     "signal",
@@ -39,9 +156,9 @@ _WINDOWS_AC_SUBST = {
     "@INCLUDE_NEXT@": "include",
     "@GUARD_PREFIX@": "GL_M4",
     "@ASM_SYMBOL_PREFIX@": '""',
-    "/* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */": '#include "build-aux/snippet/c++defs.h"',
-    "/* The definition of _GL_ARG_NONNULL is copied here.  */": '#include "build-aux/snippet/arg-nonnull.h"',
-    "/* The definition of _GL_WARN_ON_USE is copied here.  */": '#include "build-aux/snippet/warn-on-use.h"',
+    "/* The definitions of _GL_FUNCDECL_RPL etc. are copied here.  */": '#include "gnulib/lib/c++defs.h"',
+    "/* The definition of _GL_ARG_NONNULL is copied here.  */": '#include "gnulib/lib/arg-nonnull.h"',
+    "/* The definition of _GL_WARN_ON_USE is copied here.  */": '#include "gnulib/lib/warn-on-use.h"',
 
     # alloca.h
 
@@ -70,6 +187,9 @@ _WINDOWS_AC_SUBST = {
     "@HAVE_GETOPT_H@": "0",
     "@NEXT_GETOPT_H@": "<gnulib-system-libc/getopt.h>",
 
+    # getopt-cdefs.h
+    "@HAVE_SYS_CDEFS_H@": "0",
+
     # langinfo.h
     "@NEXT_LANGINFO_H@": "<gnulib-system-libc/langinfo.h>",
     "@HAVE_LANGINFO_H@": "0",
@@ -92,6 +212,9 @@ _WINDOWS_AC_SUBST = {
     "@GNULIB_DUPLOCALE@": "0",
     "@REPLACE_DUPLOCALE@": "0",
     "@HAVE_DUPLOCALE@": "1",
+    "@GNULIB_LOCALENAME@": "0",
+    "@HAVE_NEWLOCALE@": "1",
+    "@HAVE_FREELOCALE@": "1",
 
     # signal.h
     "@NEXT_SIGNAL_H@": "<gnulib-system-libc/signal.h>",
@@ -289,6 +412,8 @@ _WINDOWS_AC_SUBST = {
     "@HAVE_DECL_STRSIGNAL@": "0",
     "@GNULIB_STRVERSCMP@": "0",
     "@HAVE_STRVERSCMP@": "1",
+    "@GNULIB_EXPLICIT_BZERO@": "0",
+    "@HAVE_EXPLICIT_BZERO@": "1",
 
     # sys/stat.h
     "@NEXT_SYS_STAT_H@": "<gnulib-system-libc/sys/stat.h>",
@@ -326,6 +451,7 @@ _WINDOWS_AC_SUBST = {
     "@GNULIB_UTIMENSAT@": "0",
     "@REPLACE_UTIMENSAT@": "0",
     "@HAVE_UTIMENSAT@": "1",
+    "@GNULIB_OVERRIDES_STRUCT_STAT@": "0",
 
     # sys/time.h
     "@NEXT_SYS_TIME_H@": "<gnulib-system-libc/sys/time.h>",
@@ -339,6 +465,7 @@ _WINDOWS_AC_SUBST = {
 
     # sys/types.h
     "@NEXT_SYS_TYPES_H@": "<gnulib-system-libc/sys/types.h>",
+    "@WINDOWS_STAT_INODES@": "0",
 
     # sys/wait.h
     "@NEXT_SYS_WAIT_H@": "<gnulib-system-libc/sys/wait.h>",
@@ -467,6 +594,8 @@ _WINDOWS_AC_SUBST = {
     "@REPLACE_USLEEP@": "0",
     "@HAVE_USLEEP@": "1",
     "@REPLACE_WRITE@": "1",
+    "@GNULIB_GETPASS@": "0",
+    "@GNULIB_TRUNCATE@": "0",
 
     # wchar.h
     "@HAVE_WCHAR_H@": "1",
@@ -565,6 +694,8 @@ _WINDOWS_AC_SUBST = {
     "@GNULIB_WCSWIDTH@": "0",
     "@REPLACE_WCSWIDTH@": "0",
     "@HAVE_WCSWIDTH@": "1",
+    "@HAVE_CRTDEFS_H@": "1",
+    "@GNULIB_WCSFTIME@": "0",
 
     # wctype.h
     "@NEXT_WCTYPE_H@": "<gnulib-system-libc/wctype.h>",
@@ -582,40 +713,3 @@ _WINDOWS_AC_SUBST = {
     "@GNULIB_WCTRANS@": "0",
     "@GNULIB_TOWCTRANS@": "0",
 }
-
-def _gnulib_stdlib_shims_impl(ctx):
-    outs = []
-    for src, out_name in ctx.attr.srcs.items():
-        for src_file in src.files:
-            out = ctx.actions.declare_file(out_name)
-            ctx.actions.expand_template(
-                template = src_file,
-                output = out,
-                substitutions = ctx.attr.ac_subst,
-            )
-            outs.append(out)
-    return DefaultInfo(
-        files = depset(direct = outs),
-    )
-
-_gnulib_stdlib_shims = rule(
-    _gnulib_stdlib_shims_impl,
-    attrs = {
-        "srcs": attr.label_keyed_string_dict(
-            allow_files = [".in.h"],
-        ),
-        "ac_subst": attr.string_dict(),
-    },
-)
-
-def gnulib_windows_shims(name):
-    srcs = {}
-    for shim in _WINDOWS_STDLIB_SHIMS:
-        in_h = "lib/{}.in.h".format(shim.replace("/", "_"))
-        out_h = "gnulib-windows/shim-libc/gnulib/{}.h".format(shim)
-        srcs[in_h] = out_h
-    _gnulib_stdlib_shims(
-        name = name,
-        srcs = srcs,
-        ac_subst = _WINDOWS_AC_SUBST,
-    )
