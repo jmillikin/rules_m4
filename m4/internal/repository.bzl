@@ -30,7 +30,7 @@ cc_library(
     srcs = glob([
         "src/*.c",
         "src/*.h",
-    ]),
+    ], exclude = ["src/stackovf.c"]),
     copts = ["-DHAVE_CONFIG_H", "-UDEBUG"],
     visibility = ["//bin:__pkg__"],
     deps = [
@@ -65,11 +65,42 @@ def _m4_repository(ctx):
     ctx.file("BUILD.bazel", _M4_BUILD)
     ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD)
 
+    # Let M4 v1.4.15 build with contemporary Gnulib.
+    ctx.template("src/builtin.c", "src/builtin.c", substitutions = {
+        '#include "pipe.h"': '#include "spawn-pipe.h"',
+    }, executable = False)
+
+    # Let M4 v1.4.14 build with contemporary Gnulib.
+    ctx.template("src/m4.h", "src/m4.h", substitutions = {
+        "\n".join([
+            "#include <string.h>",
+            "#include <sys/types.h>",
+        ]): "\n".join([
+            "#include <string.h>",
+            "#include <sys/stat.h>",
+            "#include <sys/types.h>",
+        ]),
+    }, executable = False)
+
+    # Let M4 v1.4.13 build with contemporary Gnulib.
+    ctx.template("src/output.c", "src/output.c", substitutions = {
+        '#include "gl_avltree_oset.h"\n\n': "\n".join([
+            '#include "gl_avltree_oset.h"',
+            '#include "gl_xoset.h"',
+        ]),
+        "diversion_table = gl_oset_create_empty (GL_AVLTREE_OSET, cmp_diversion_CB);": "diversion_table = gl_oset_create_empty (GL_AVLTREE_OSET, cmp_diversion_CB, NULL);",
+    }, executable = False)
+
     # Prevent LF -> CRLF conversion on Windows. This deviates from the OS
     # standard behavior to fit with the generally UNIX-ish assumptions made
     # by M4 clients (notably Bison).
     ctx.template("src/output.c", "src/output.c", substitutions = {
-        "output_file = stdout;": "output_file = stdout; SET_BINARY(STDOUT_FILENO);",
+        "output_file = stdout;": "\n".join([
+            "output_file = stdout;",
+            "#ifdef SET_BINARY",
+            "SET_BINARY(STDOUT_FILENO);",
+            "#endif",
+        ]),
     }, executable = False)
 
 m4_repository = repository_rule(

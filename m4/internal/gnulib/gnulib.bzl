@@ -40,6 +40,7 @@ _CONFIG_HEADER = """
 
 #define RENAME_OPEN_FILE_WORKS 0
 #define HAVE_TMPFILE 1
+#define HAVE_SIGNAL_H 1
 #define RETSIGTYPE void
 """
 
