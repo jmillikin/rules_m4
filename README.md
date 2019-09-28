@@ -32,25 +32,25 @@ genrule(
     srcs = ["hello_world.in.txt"],
     outs = ["hello_world_gen.txt"],
     cmd = "$(M4) $(SRCS) > $@",
-    toolchains = ["@rules_m4//m4:toolchain"],
+    toolchains = ["@rules_m4//m4:current_m4_toolchain"],
 )
 ```
 
 ## Toolchains
 
 ```python
-load("@rules_m4//m4:m4.bzl", "m4_common")
+load("@rules_m4//m4:m4.bzl", "M4_TOOLCHAIN_TYPE", "m4_toolchain")
 
 def _my_rule(ctx):
-    m4_toolchain = m4_common.m4_toolchain(ctx)
+    m4 = m4_toolchain(ctx)
     ctx.actions.run(
-        executable = m4_toolchain.m4_executable,
-        inputs = m4_toolchain.files,
+        tools = [m4.m4_tool],
+        env = m4.m4_env,
         # ...
     )
 
 my_rule = rule(
     _my_rule,
-    toolchains = [m4_common.TOOLCHAIN_TYPE],
+    toolchains = [M4_TOOLCHAIN_TYPE],
 )
 ```

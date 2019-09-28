@@ -6,6 +6,6 @@ toolchain_type(
 )
 
 m4_toolchain_alias(
-    name = "toolchain",
+    name = "current_m4_toolchain",
     visibility = ["//visibility:public"],
 )

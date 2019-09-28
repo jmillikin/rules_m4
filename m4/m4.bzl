@@ -14,34 +14,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@rules_m4//m4/internal:repository.bzl",
-    _m4_repository = "m4_repository",
-)
-load(
-    "@rules_m4//m4/internal:toolchain.bzl",
-    _TOOLCHAIN_TYPE = "TOOLCHAIN_TYPE",
-    _ToolchainInfo = "ToolchainInfo",
-)
-load(
-    "@rules_m4//m4/internal:versions.bzl",
-    _DEFAULT_VERSION = "DEFAULT_VERSION",
-    _check_version = "check_version",
-)
+load("@rules_m4//m4/internal:repository.bzl", _m4_repository = "m4_repository")
+load("@rules_m4//m4/internal:toolchain.bzl", _M4_TOOLCHAIN_TYPE = "M4_TOOLCHAIN_TYPE")
+load("@rules_m4//m4/internal:versions.bzl", "DEFAULT_VERSION", "check_version")
 
+M4_TOOLCHAIN_TYPE = _M4_TOOLCHAIN_TYPE
 m4_repository = _m4_repository
 
-def _ctx_toolchain(ctx):
-    return ctx.toolchains[_TOOLCHAIN_TYPE].m4_toolchain
-
-m4_common = struct(
-    TOOLCHAIN_TYPE = _TOOLCHAIN_TYPE,
-    ToolchainInfo = _ToolchainInfo,
-    m4_toolchain = _ctx_toolchain,
-)
+def m4_toolchain(ctx):
+    return ctx.toolchains[M4_TOOLCHAIN_TYPE].m4_toolchain
 
 def _m4(ctx):
-    m4_toolchain = m4_common.m4_toolchain(ctx)
+    m4 = m4_toolchain(ctx)
 
     stdout = ctx.outputs.output
     if stdout == None:
@@ -53,7 +37,7 @@ def _m4(ctx):
     args = ctx.actions.args()
     args.add_all([
         stdout.path,
-        m4_toolchain.m4_executable.path,
+        m4.m4_tool.executable.path,
     ])
 
     if ctx.outputs.freeze_state:
@@ -76,8 +60,11 @@ def _m4(ctx):
     args.add_all(ctx.attr.m4_options)
     args.add_all(ctx.files.srcs)
 
-    tools = [ctx.executable._capture_stdout]
-    env = {}
+    tools = [
+        ctx.executable._capture_stdout,
+        m4.m4_tool,
+    ]
+    env = dict(m4.m4_env)
     if "m4_syscmd" not in ctx.attr.features:
         tools.append(ctx.executable._deny_shell)
         env["M4_SYSCMD_SHELL"] = ctx.executable._deny_shell.path
@@ -85,10 +72,7 @@ def _m4(ctx):
     ctx.actions.run(
         executable = ctx.executable._capture_stdout,
         arguments = [args],
-        inputs = depset(
-            direct = inputs,
-            transitive = [m4_toolchain.files],
-        ),
+        inputs = depset(direct = inputs),
         outputs = outputs,
         tools = tools,
         env = env,
@@ -129,11 +113,11 @@ m4 = rule(
             cfg = "host",
         ),
     },
-    toolchains = [m4_common.TOOLCHAIN_TYPE],
+    toolchains = [M4_TOOLCHAIN_TYPE],
 )
 
-def m4_register_toolchains(version = _DEFAULT_VERSION):
-    _check_version(version)
+def m4_register_toolchains(version = DEFAULT_VERSION):
+    check_version(version)
     repo_name = "m4_v{}".format(version)
     if repo_name not in native.existing_rules().keys():
         m4_repository(
