@@ -1,4 +1,5 @@
 load("@rules_m4//m4:m4.bzl", "m4")
+load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
 
 m4(
     name = "expansion_test",
@@ -55,4 +56,9 @@ cc_test(
         "@com_google_googletest//:gtest",
         "@com_google_googletest//:gtest_main",
     ],
+)
+
+filegroup(
+    name = "all_versions",
+    srcs = ["@m4_v{}//bin:m4".format(version) for version in VERSION_URLS],
 )
