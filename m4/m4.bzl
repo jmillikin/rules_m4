@@ -60,10 +60,7 @@ def _m4(ctx):
     args.add_all(ctx.attr.m4_options)
     args.add_all(ctx.files.srcs)
 
-    tools = [
-        ctx.executable._capture_stdout,
-        m4.m4_tool,
-    ]
+    tools = [m4.m4_tool]
     env = dict(m4.m4_env)
     if "m4_syscmd" not in ctx.attr.features:
         tools.append(ctx.executable._deny_shell)

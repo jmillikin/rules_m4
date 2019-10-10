@@ -20,7 +20,9 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <process.h>
+#else
 #include <unistd.h>
 #endif
 
@@ -45,9 +47,17 @@ int main(int argc, char **argv) {
         perror("close");
         return 1;
     }
-    if ((rc = execvp(argv[2], argv + 2)) == -1) {
+#ifdef _WIN32
+    if ((rc = _spawnv(_P_WAIT, argv[2], argv + 2)) == -1) {
+        perror("spawnv");
+        return 1;
+    }
+    return 0;
+#else
+    if ((rc = execv(argv[2], argv + 2)) == -1) {
         perror("exec");
         return 1;
     }
     return 0; /* not reached */
+#endif
 }
