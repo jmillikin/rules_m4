@@ -2,6 +2,16 @@
 
 #define WINDOWS_NATIVE
 
+#define secure_getenv getenv
+#define getpid _getpid
+#define popen _popen
+#define pclose _pclose
+
+char *mkdtemp(char *template);
+int mkstemp(char *template);
+
+#include <process.h>
+
 /* Disable MSVC's assertions that language keywords aren't being
  * shadowed by macros.
 **/

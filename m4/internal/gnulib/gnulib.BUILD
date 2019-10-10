@@ -86,7 +86,6 @@ _GNULIB_SRCS = [
     "lib/progname.c",
     "lib/quotearg.c",
     "lib/regex.c",
-    "lib/secure_getenv.c",
     "lib/spawn-pipe.c",
     "lib/tmpdir.c",
     "lib/vasnprintf.c",
@@ -105,6 +104,7 @@ _GNULIB_SRCS = [
 ]
 
 _GNULIB_DARWIN_SRCS = [
+    "lib/secure_getenv.c",
     "lib/printf-frexp.c",
     "lib/printf-frexpl.c",
     "lib/isnanl.c",
@@ -118,6 +118,7 @@ _GNULIB_LINUX_SRCS = [
     "lib/gl_oset.c",
     "lib/gl_xlist.c",
     "lib/gl_xoset.c",
+    "lib/secure_getenv.c",
     "lib/sig-handler.c",
     "lib/xsize.c",
 ]

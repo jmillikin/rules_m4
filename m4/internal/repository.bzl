@@ -68,6 +68,7 @@ def _m4_repository(ctx):
     # Let M4 v1.4.15 build with contemporary Gnulib.
     ctx.template("src/builtin.c", "src/builtin.c", substitutions = {
         '#include "pipe.h"': '#include "spawn-pipe.h"',
+        "extern FILE *popen ();": "#include <stdio.h>",
     }, executable = False)
 
     # Let M4 v1.4.14 build with contemporary Gnulib.
@@ -102,6 +103,27 @@ def _m4_repository(ctx):
             "#endif",
         ]),
     }, executable = False)
+
+    # Older versions of M4 define a stub `mktemp` that conflicts
+    # with the system version on Windows.
+    ctx.template("src/m4.h", "src/m4.h", substitutions = {
+        "char *mktemp ();": "",
+    }, executable = False)
+
+    # Older versions of M4 don't use the gnulib copy of <signal.h>.
+    ctx.template("src/m4.c", "src/m4.c", substitutions = {
+        "#include <sys/signal.h>": "#include <signal.h>",
+    }, executable = False)
+
+    # M4 assumes __STDC__ means "compiler supports ISO C", but MSVC
+    # uses it to mean "does not have Microsoft extensions enabled".
+    #
+    # Note that gnulib treats it differently, and enabling it globally
+    # will break the build.
+    ctx.template("src/debug.c", "src/debug.c", substitutions = {
+        "__STDC__": "__LINE__",
+    }, executable = False)
+
 
 m4_repository = repository_rule(
     _m4_repository,
