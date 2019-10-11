@@ -1,6 +1,6 @@
 ---
 validate_config: 1
-bazel: 0.29.0
+bazel: 1.0.0
 buildifier:
   version: 0.29.0
   warnings: "-module-docstring,-function-docstring,-bzl-visibility"
