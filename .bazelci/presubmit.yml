@@ -21,4 +21,5 @@ tasks:
     build_targets: ["//..."]
     test_targets: ["//..."]
   windows:
-    build_targets: ["//...", "-//tests:m4_test"]
+    build_targets: ["//..."]
+    test_targets: ["//..."]
