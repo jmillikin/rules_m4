@@ -31,7 +31,7 @@ cc_library(
         "src/*.c",
         "src/*.h",
     ], exclude = ["src/stackovf.c"]),
-    copts = ["-DHAVE_CONFIG_H", "-UDEBUG"] + %s,
+    copts = ["-DHAVE_CONFIG_H", "-UDEBUG"] + {EXTRA_COPTS},
     visibility = ["//bin:__pkg__"],
     deps = [
         "//gnulib:config_h",
@@ -63,7 +63,7 @@ def _m4_repository(ctx):
     _gnulib_overlay(ctx, m4_version = version, extra_copts = extra_copts)
 
     ctx.file("WORKSPACE", "workspace(name = {name})\n".format(name = repr(ctx.name)))
-    ctx.file("BUILD.bazel", _M4_BUILD % str(extra_copts))
+    ctx.file("BUILD.bazel", _M4_BUILD.format(EXTRA_COPTS = extra_copts))
     ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD)
 
     # Let M4 v1.4.15 build with contemporary Gnulib.
