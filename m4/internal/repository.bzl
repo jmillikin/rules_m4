@@ -31,7 +31,7 @@ cc_library(
         "src/*.c",
         "src/*.h",
     ], exclude = ["src/stackovf.c"]),
-    copts = ["-DHAVE_CONFIG_H", "-UDEBUG"],
+    copts = ["-DHAVE_CONFIG_H", "-UDEBUG"] + %s,
     visibility = ["//bin:__pkg__"],
     deps = [
         "//gnulib:config_h",
@@ -59,10 +59,11 @@ def _m4_repository(ctx):
         stripPrefix = "m4-{}".format(version),
     )
 
-    _gnulib_overlay(ctx, m4_version = version)
+    extra_copts = ctx.attr.extra_copts
+    _gnulib_overlay(ctx, m4_version = version, extra_copts = extra_copts)
 
     ctx.file("WORKSPACE", "workspace(name = {name})\n".format(name = repr(ctx.name)))
-    ctx.file("BUILD.bazel", _M4_BUILD)
+    ctx.file("BUILD.bazel", _M4_BUILD % str(extra_copts))
     ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD)
 
     # Let M4 v1.4.15 build with contemporary Gnulib.
@@ -129,6 +130,7 @@ m4_repository = repository_rule(
     _m4_repository,
     attrs = {
         "version": attr.string(mandatory = True),
+        "extra_copts": attr.string_list(),
         "_gnulib_build": attr.label(
             default = "@rules_m4//m4/internal:gnulib/gnulib.BUILD",
             allow_single_file = True,

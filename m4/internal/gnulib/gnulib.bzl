@@ -71,14 +71,16 @@ char *secure_getenv(char const *name);
 #endif
 """
 
-def gnulib_overlay(ctx, m4_version):
+def gnulib_overlay(ctx, m4_version, extra_copts = []):
     ctx.download_and_extract(
         url = _GNULIB_URLS,
         sha256 = _GNULIB_SHA256,
         output = "gnulib",
         stripPrefix = "gnulib-" + _GNULIB_VERSION,
     )
-    ctx.symlink(ctx.attr._gnulib_build, "gnulib/BUILD.bazel")
+    ctx.template("gnulib/BUILD.bazel", ctx.attr._gnulib_build, substitutions = {
+        "{GNULIB_EXTRA_COPTS}": str(extra_copts),
+    }, executable = False)
 
     config_header = _CONFIG_HEADER.format(
         M4_VERSION = m4_version,
