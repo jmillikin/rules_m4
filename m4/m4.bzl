@@ -113,12 +113,13 @@ m4 = rule(
     toolchains = [M4_TOOLCHAIN_TYPE],
 )
 
-def m4_register_toolchains(version = DEFAULT_VERSION):
+def m4_register_toolchains(version = DEFAULT_VERSION, extra_copts = []):
     check_version(version)
     repo_name = "m4_v{}".format(version)
     if repo_name not in native.existing_rules().keys():
         m4_repository(
             name = repo_name,
             version = version,
+            extra_copts = extra_copts,
         )
     native.register_toolchains("@rules_m4//m4/toolchains:v{}".format(version))

@@ -203,7 +203,7 @@ cc_library(
         "//conditions:default": _GNULIB_LINUX_SRCS,
     }),
     hdrs = _GNULIB_HDRS,
-    copts = _COPTS + ["-DHAVE_CONFIG_H"],
+    copts = _COPTS + ["-DHAVE_CONFIG_H"] + {GNULIB_EXTRA_COPTS},
     strip_include_prefix = "lib",
     textual_hdrs = [
         "lib/regex_internal.c",
