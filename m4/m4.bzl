@@ -113,6 +113,7 @@ m4 = rule(
     toolchains = [M4_TOOLCHAIN_TYPE],
 )
 
+# buildifier: disable=unnamed-macro
 def m4_register_toolchains(version = DEFAULT_VERSION, extra_copts = []):
     check_version(version)
     repo_name = "m4_v{}".format(version)

@@ -125,7 +125,6 @@ def _m4_repository(ctx):
         "__STDC__": "__LINE__",
     }, executable = False)
 
-
 m4_repository = repository_rule(
     _m4_repository,
     attrs = {

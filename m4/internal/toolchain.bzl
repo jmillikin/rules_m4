@@ -16,6 +16,7 @@
 
 M4_TOOLCHAIN_TYPE = "@rules_m4//m4:toolchain_type"
 
+# buildifier: disable=provider-params
 M4ToolchainInfo = provider(fields = ["all_files", "m4_tool", "m4_env"])
 
 def _template_vars(toolchain):
