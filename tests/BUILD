@@ -64,4 +64,5 @@ cc_test(
 filegroup(
     name = "all_versions",
     srcs = ["@m4_v{}//bin:m4".format(version) for version in VERSION_URLS],
+    tags = ["manual"],
 )
