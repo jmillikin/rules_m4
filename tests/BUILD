@@ -51,6 +51,9 @@ cc_test(
     name = "m4_test",
     srcs = ["m4_test.cc"],
     data = [":testdata"],
+    local_defines = [
+        "'EXPANSION_TEST_IN=\"" + package_name() + "/expansion_test.in\"'",
+    ],
     deps = [
         "@bazel_tools//tools/cpp/runfiles",
         "@com_google_googletest//:gtest",
