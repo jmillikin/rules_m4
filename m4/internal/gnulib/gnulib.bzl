@@ -133,6 +133,18 @@ static const char * _replaced_get_charset_aliases (void)
         "static _Noreturn void": "static _Noreturn __attribute_noreturn__ void",
     })
 
+    # If _GNU_SOURCE is defined, some versions of GNU libc define SIGSTKSZ to
+    # be a function call. This breaks an assumption in gnulib that SIGSTKSZ is
+    # a macro constant.
+    #
+    # If undefined, gnulib sets it to a reasonable default instead of failing
+    # to compile.
+    #
+    # https://github.com/jmillikin/rules_m4/issues/9
+    ctx.template("gnulib/lib/c-stack.c", "gnulib/lib/c-stack.c", substitutions = {
+        "SIGSTKSZ": "GNULIB_SIGSTKSZ",
+    })
+
 _WINDOWS_STDLIB_SHIMS = [
     "alloca",
     "errno",
