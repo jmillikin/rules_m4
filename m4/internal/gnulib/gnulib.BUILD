@@ -23,6 +23,9 @@ cc_library(
         "@bazel_tools//src/conditions:windows": [
             "config-windows/config.h",
         ],
+        "@bazel_tools//src/conditions:openbsd": [
+            "config-openbsd/config.h",
+        ],
         "//conditions:default": [
             "config-linux/config.h",
         ],
@@ -33,6 +36,9 @@ cc_library(
         ],
         "@bazel_tools//src/conditions:windows": [
             "config-windows",
+        ],
+        "@bazel_tools//src/conditions:openbsd": [
+            "config-openbsd",
         ],
         "//conditions:default": [
             "config-linux",

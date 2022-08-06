@@ -97,11 +97,23 @@ def gnulib_overlay(ctx, m4_version, extra_copts = []):
         "{GNULIB_CONFIG_HEADER}": config_header,
         "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
     }, executable = False)
+    ctx.template("gnulib/config-openbsd/config.h", ctx.attr._gnulib_config_openbsd_h, substitutions = {
+        "{GNULIB_CONFIG_HEADER}": config_header,
+        "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
+    }, executable = False)
 
     for shim in _WINDOWS_STDLIB_SHIMS:
         in_h = "gnulib/lib/{}.in.h".format(shim.replace("/", "_"))
         out_h = "gnulib/config-windows/shim-libc/gnulib/{}.h".format(shim)
         ctx.template(out_h, in_h, substitutions = _WINDOWS_AC_SUBST, executable = False)
+
+    if ctx.os.name == "openbsd":
+        ctx.template(
+            "gnulib/lib/alloca.h",
+            "gnulib/lib/alloca.in.h",
+            substitutions = {},
+            executable = False,
+        )
 
     # Older versions of M4 expect gnulib shims for exit() and strstr()
     ctx.file("gnulib/lib/exit.h", "#include <stdlib.h>")

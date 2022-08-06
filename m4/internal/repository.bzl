@@ -146,5 +146,9 @@ m4_repository = repository_rule(
             default = "//m4/internal:gnulib/config-windows.h",
             allow_single_file = True,
         ),
+        "_gnulib_config_openbsd_h": attr.label(
+            default = "//m4/internal:gnulib/config-openbsd.h",
+            allow_single_file = True,
+        ),
     },
 )
