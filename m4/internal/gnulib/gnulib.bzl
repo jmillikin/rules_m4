@@ -152,6 +152,11 @@ static const char * _replaced_get_charset_aliases (void)
     # Some platforms have alloca() but not <alloca.h>.
     ctx.file("gnulib/stub-alloca/alloca.h", "")
 
+    # Silence warning about unused variable when HAVE_SNPRINTF is defined 0.
+    ctx.template("gnulib/lib/vasnprintf.c", "gnulib/lib/vasnprintf.c", substitutions = {
+        "int flags = dp->flags;": "int flags = dp->flags; (void)flags;",
+    })
+
 _WINDOWS_STDLIB_SHIMS = [
     "alloca",
     "errno",
