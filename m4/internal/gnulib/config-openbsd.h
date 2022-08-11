@@ -133,7 +133,7 @@ extern char **environ;
 #define HAVE_SIGINTERRUPT 1
 #define HAVE_SIGSET_T 1
 #define HAVE_SIG_ATOMIC_T 1
-#define HAVE_SNPRINTF 1
+#define HAVE_SNPRINTF 0
 #define HAVE_SNPRINTF_RETVAL_C99 1
 #define HAVE_SPAWN_H 1
 #define HAVE_STACK_OVERFLOW_HANDLING 1
