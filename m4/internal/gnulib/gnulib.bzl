@@ -97,6 +97,10 @@ def gnulib_overlay(ctx, m4_version, extra_copts = []):
         "{GNULIB_CONFIG_HEADER}": config_header,
         "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
     }, executable = False)
+    ctx.template("gnulib/config-openbsd/config.h", ctx.attr._gnulib_config_openbsd_h, substitutions = {
+        "{GNULIB_CONFIG_HEADER}": config_header,
+        "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
+    }, executable = False)
 
     for shim in _WINDOWS_STDLIB_SHIMS:
         in_h = "gnulib/lib/{}.in.h".format(shim.replace("/", "_"))
@@ -143,6 +147,14 @@ static const char * _replaced_get_charset_aliases (void)
     # https://github.com/jmillikin/rules_m4/issues/9
     ctx.template("gnulib/lib/c-stack.c", "gnulib/lib/c-stack.c", substitutions = {
         "SIGSTKSZ": "GNULIB_SIGSTKSZ",
+    })
+
+    # Some platforms have alloca() but not <alloca.h>.
+    ctx.file("gnulib/stub-alloca/alloca.h", "")
+
+    # Silence warning about unused variable when HAVE_SNPRINTF is defined 0.
+    ctx.template("gnulib/lib/vasnprintf.c", "gnulib/lib/vasnprintf.c", substitutions = {
+        "int flags = dp->flags;": "int flags = dp->flags; (void)flags;",
     })
 
 _WINDOWS_STDLIB_SHIMS = [
