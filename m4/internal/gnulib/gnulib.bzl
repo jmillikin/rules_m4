@@ -17,12 +17,7 @@
 _GNULIB_VERSION = "788db09a9f88abbef73c97e8d7291c40455336d8"
 _GNULIB_SHA256 = "27ef79e649c95856e05f82414977f5e05d009310f91916b64806d1c61f913485"
 
-_URL_BASE = "github.com/jmillikin/rules_m4/releases/download/v0.1/m4-gnulib-{}.tar.xz".format(_GNULIB_VERSION)
-
-_GNULIB_URLS = [
-    "https://mirror.bazel.build/" + _URL_BASE,
-    "https://" + _URL_BASE,
-]
+_URL_BASE = "https://github.com/jmillikin/rules_m4/releases/download/v0.1/m4-gnulib-{}.tar.xz"
 
 _CONFIG_HEADER = """
 #include "gnulib/lib/config.in.h"
@@ -73,7 +68,7 @@ char *secure_getenv(char const *name);
 
 def gnulib_overlay(ctx, m4_version, extra_copts = []):
     ctx.download_and_extract(
-        url = _GNULIB_URLS,
+        url = [_URL_BASE.format(_GNULIB_VERSION)],
         sha256 = _GNULIB_SHA256,
         output = "gnulib",
         stripPrefix = "gnulib-" + _GNULIB_VERSION,
