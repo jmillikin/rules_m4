@@ -54,6 +54,12 @@ cc_library(
     deps = [":config_h"],
 )
 
+cc_library(
+    name = "stub_alloca_h",
+    hdrs = ["stub-alloca/alloca.h"],
+    includes = ["stub-alloca"],
+)
+
 _GNULIB_HDRS = glob([
     "lib/*.h",
     "lib/glthread/*.h",
@@ -221,6 +227,7 @@ cc_library(
     visibility = ["//:__pkg__"],
     deps = [":config_h"] + select({
         "@bazel_tools//src/conditions:windows": [":gnulib_windows_shims"],
+        "@bazel_tools//src/conditions:openbsd": [":stub_alloca_h"],
         "//conditions:default": [],
     }),
 )

@@ -107,14 +107,6 @@ def gnulib_overlay(ctx, m4_version, extra_copts = []):
         out_h = "gnulib/config-windows/shim-libc/gnulib/{}.h".format(shim)
         ctx.template(out_h, in_h, substitutions = _WINDOWS_AC_SUBST, executable = False)
 
-    if ctx.os.name == "openbsd":
-        ctx.template(
-            "gnulib/lib/alloca.h",
-            "gnulib/lib/alloca.in.h",
-            substitutions = {},
-            executable = False,
-        )
-
     # Older versions of M4 expect gnulib shims for exit() and strstr()
     ctx.file("gnulib/lib/exit.h", "#include <stdlib.h>")
     ctx.file("gnulib/lib/strstr.h", "#include <string.h>")
@@ -156,6 +148,9 @@ static const char * _replaced_get_charset_aliases (void)
     ctx.template("gnulib/lib/c-stack.c", "gnulib/lib/c-stack.c", substitutions = {
         "SIGSTKSZ": "GNULIB_SIGSTKSZ",
     })
+
+    # Some platforms have alloca() but not <alloca.h>.
+    ctx.file("gnulib/stub-alloca/alloca.h", "")
 
 _WINDOWS_STDLIB_SHIMS = [
     "alloca",
