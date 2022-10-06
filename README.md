@@ -36,6 +36,28 @@ genrule(
 )
 ```
 
+### Bzlmod
+
+Add the following line to `MODULE.bazel`:
+
+```python
+bazel_dep(name = "rules_m4", version = "0.2.2-bcr.0")
+```
+
+Optionally, additional `copts` may be configured for the toolchain build by
+overriding the `initialize_m4_toolchains` extension. For instance, to disable
+warnings during the build:
+
+```python
+bazel_dep(name = "rules_m4", version = "0.2.2-bcr.0")
+
+initialize_m4_toolchains = use_extension(
+    "@rules_m4//m4:extensions.bzl",
+    "initialize_m4_toolchains",
+)
+initialize_m4_toolchains.configure(extra_copts = ["-w"])
+```
+
 ## Toolchains
 
 ```python
