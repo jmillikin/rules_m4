@@ -1,20 +1,53 @@
 module(
     name = "rules_m4",
-    version = "0.2.2-bcr.0",
     compatibility_level = 1,
+    version = "0.2.2-bcr.0",
 )
 
 bazel_dep(
     name = "googletest",
-    version = "1.11.0",
-    repo_name = "com_google_googletest",
     dev_dependency = True,
+    repo_name = "com_google_googletest",
+    version = "1.11.0",
 )
 
-initialize_m4_toolchains = use_extension(
-    "@rules_m4//m4:extensions.bzl",
-    "initialize_m4_toolchains",
-)
-initialize_m4_toolchains.configure(extra_copts = [])
-use_repo(initialize_m4_toolchains, "m4_v1.4.18")
-register_toolchains("@rules_m4//m4/toolchains:v1.4.18")
+m4 = use_extension("@rules_m4//m4:extensions.bzl", "m4_extension")
+
+SUPPORTED_VERSIONS = [
+    "1.4.18",
+    "1.4.17",
+    "1.4.16",
+    "1.4.15",
+    "1.4.14",
+    "1.4.13",
+    "1.4.12",
+    "1.4.11",
+    "1.4.10",
+    "1.4.9",
+    "1.4.8",
+    "1.4.7",
+    "1.4.6",
+    "1.4.5",
+    "1.4.4",
+    "1.4.3",
+    "1.4.2",
+    "1.4.1",
+]
+
+[
+    m4.configure_toolchain(version = version)
+    for version in SUPPORTED_VERSIONS
+]
+
+[
+    use_repo(
+        m4,
+        "m4_v{}".format(version),
+    )
+    for version in SUPPORTED_VERSIONS
+]
+
+[
+    register_toolchains("@rules_m4//m4/toolchains:v{}".format(version))
+    for version in SUPPORTED_VERSIONS
+]

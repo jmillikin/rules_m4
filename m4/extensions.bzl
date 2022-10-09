@@ -1,33 +1,31 @@
 load("@rules_m4//m4/internal:repository.bzl", "m4_repository")
 load("@rules_m4//m4/internal:versions.bzl", "DEFAULT_VERSION", "check_version")
 
-def _initialize_m4_toolchains_impl(module_ctx):
-    # Override extra_copts with the values in the user-specified MODULE.bazel.
-    # This corresponds to the first entry in this list. If a user does not
-    # manually configure the repo via initialize_m4_toolchain.configure, the
-    # empty default values are used.
-    extra_copts = []
+def _m4_extension_impl(module_ctx):
+    registered_configs = []
     for module in module_ctx.modules:
-        extra_copts = module.tags.configure[0].extra_copts
-        break
+        for config in module.tags.configure_toolchain:
+            check_version(config.version)
+            registered_versions = [
+                version
+                for (version, _) in registered_configs
+            ]
+            if config.version not in registered_versions:
+                registered_configs.append((config.version, config.extra_copts))
 
-    # Enabling non-default versions requires complicated version resolution and
-    # encapsulation of toolchains. Bzlmod users will most likely want to use the
-    # latest available version of m4 without thinking too much about it.
-    check_version(DEFAULT_VERSION)
-    repo_name = "m4_v{}".format(DEFAULT_VERSION)
-    if repo_name not in native.existing_rules().keys():
+    for (version, extra_copts) in registered_configs:
         m4_repository(
-            name = repo_name,
-            version = DEFAULT_VERSION,
+            name = "m4_v{}".format(version),
+            version = version,
             extra_copts = extra_copts,
         )
 
-initialize_m4_toolchains = module_extension(
-    implementation = _initialize_m4_toolchains_impl,
+m4_extension = module_extension(
+    implementation = _m4_extension_impl,
     tag_classes = {
-        "configure": tag_class(
+        "configure_toolchain": tag_class(
             attrs = {
+                "version": attr.string(default = DEFAULT_VERSION),
                 "extra_copts": attr.string_list(),
             },
         ),
