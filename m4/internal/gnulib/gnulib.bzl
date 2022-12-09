@@ -96,6 +96,10 @@ def gnulib_overlay(ctx, m4_version, extra_copts = []):
         "{GNULIB_CONFIG_HEADER}": config_header,
         "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
     }, executable = False)
+    ctx.template("gnulib/config-freebsd/config.h", ctx.attr._gnulib_config_freebsd_h, substitutions = {
+        "{GNULIB_CONFIG_HEADER}": config_header,
+        "{GNULIB_CONFIG_FOOTER}": _CONFIG_FOOTER,
+    }, executable = False)
 
     for shim in _WINDOWS_STDLIB_SHIMS:
         in_h = "gnulib/lib/{}.in.h".format(shim.replace("/", "_"))
@@ -146,6 +150,19 @@ static const char * _replaced_get_charset_aliases (void)
 
     # Some platforms have alloca() but not <alloca.h>.
     ctx.file("gnulib/stub-alloca/alloca.h", "")
+
+    ctx.file(
+        "gnulib/maybe-alloca/alloca.h",
+        content =
+            """
+    #if defined(__GLIBC__)
+    #include_next <alloca.h>
+    #else
+    #include <stdlib.h>
+    #endif
+    """,
+        executable = False,
+    )
 
     # Silence warning about unused variable when HAVE_SNPRINTF is defined 0.
     ctx.template("gnulib/lib/vasnprintf.c", "gnulib/lib/vasnprintf.c", substitutions = {
