@@ -50,10 +50,7 @@ cc_test(
     name = "m4_test",
     srcs = ["m4_test.cc"],
     data = [":testdata"],
-    linkstatic = select({
-        "@bazel_tools//src/conditions:openbsd": True,
-        "//conditions:default": None,
-    }),
+    linkstatic = True,
     local_defines = [
         "'EXPANSION_TEST_IN=\"" + package_name() + "/expansion_test.in\"'",
     ],
