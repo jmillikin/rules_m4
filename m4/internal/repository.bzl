@@ -51,6 +51,16 @@ cc_binary(
 )
 """
 
+_RULES_M4_INTERNAL_BUILD = """
+load("@rules_m4//m4/internal:toolchain.bzl", "m4_toolchain_info")
+
+m4_toolchain_info(
+    name = "toolchain_info",
+    m4_tool = "//bin:m4",
+    visibility = ["//visibility:public"],
+)
+"""
+
 def _m4_repository(ctx):
     version = ctx.attr.version
     _check_version(version)
@@ -68,6 +78,7 @@ def _m4_repository(ctx):
     ctx.file("WORKSPACE", "workspace(name = {name})\n".format(name = repr(ctx.name)))
     ctx.file("BUILD.bazel", _M4_BUILD.format(EXTRA_COPTS = extra_copts))
     ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD)
+    ctx.file("rules_m4_internal/BUILD.bazel", _RULES_M4_INTERNAL_BUILD)
 
     # Let M4 v1.4.15 build with contemporary Gnulib.
     ctx.template("src/builtin.c", "src/builtin.c", substitutions = {
