@@ -30,7 +30,10 @@ cc_library(
     srcs = glob([
         "src/*.c",
         "src/*.h",
-    ], exclude = ["src/stackovf.c"]),
+    ], exclude = [
+        "src/stackovf.c",
+        "src/ansi2knr.c",
+    ]),
     copts = ["-DHAVE_CONFIG_H", "-UDEBUG"] + {EXTRA_COPTS},
     visibility = ["//bin:__pkg__"],
     deps = [
