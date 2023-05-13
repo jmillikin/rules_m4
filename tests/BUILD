@@ -65,8 +65,8 @@ cc_test(
     ],
 )
 
-filegroup(
+alias(
     name = "all_versions",
-    srcs = ["@m4_v{}//bin:m4".format(version) for version in VERSION_URLS],
+    actual = "@rules_m4_testutil//:all_versions",
     tags = ["manual"],
 )

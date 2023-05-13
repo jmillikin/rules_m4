@@ -1,7 +1,10 @@
 workspace(name = "rules_m4")
 
 load("@rules_m4//m4:m4.bzl", "m4_register_toolchains", "m4_repository")
+load("@rules_m4//m4/internal:testutil.bzl", "rules_m4_testutil")
 load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
+
+rules_m4_testutil(name = "rules_m4_testutil")
 
 m4_register_toolchains()
 
