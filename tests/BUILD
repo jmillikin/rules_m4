@@ -1,5 +1,4 @@
 load("@rules_m4//m4:m4.bzl", "m4")
-load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
 
 m4(
     name = "expansion_test",
