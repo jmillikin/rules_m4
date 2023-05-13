@@ -14,12 +14,24 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_m4//m4/internal:repository.bzl", _m4_repository = "m4_repository")
-load("@rules_m4//m4/internal:toolchain.bzl", _M4_TOOLCHAIN_TYPE = "M4_TOOLCHAIN_TYPE")
-load("@rules_m4//m4/internal:versions.bzl", "DEFAULT_VERSION", "check_version")
+load(
+    "@rules_m4//m4/internal:repository.bzl",
+    _m4_repository = "m4_repository",
+    _m4_toolchain_repository = "m4_toolchain_repository",
+)
+load(
+    "@rules_m4//m4/internal:toolchain.bzl",
+    _M4_TOOLCHAIN_TYPE = "M4_TOOLCHAIN_TYPE",
+)
+load(
+    "@rules_m4//m4/internal:versions.bzl",
+    "DEFAULT_VERSION",
+    "check_version",
+)
 
 M4_TOOLCHAIN_TYPE = _M4_TOOLCHAIN_TYPE
 m4_repository = _m4_repository
+m4_toolchain_repository = _m4_toolchain_repository
 
 def m4_toolchain(ctx):
     return ctx.toolchains[M4_TOOLCHAIN_TYPE].m4_toolchain

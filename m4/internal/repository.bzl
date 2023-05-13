@@ -75,7 +75,9 @@ def _m4_repository(ctx):
     extra_copts = ctx.attr.extra_copts
     _gnulib_overlay(ctx, m4_version = version, extra_copts = extra_copts)
 
-    ctx.file("WORKSPACE", "workspace(name = {name})\n".format(name = repr(ctx.name)))
+    ctx.file("WORKSPACE", "workspace(name = {name})\n".format(
+        name = repr(ctx.name),
+    ))
     ctx.file("BUILD.bazel", _M4_BUILD.format(EXTRA_COPTS = extra_copts))
     ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD)
     ctx.file("rules_m4_internal/BUILD.bazel", _RULES_M4_INTERNAL_BUILD)
@@ -166,3 +168,37 @@ m4_repository = repository_rule(
         ),
     },
 )
+
+_TOOLCHAIN_BUILD = """
+load("@rules_m4//m4/internal:toolchain.bzl", "M4_TOOLCHAIN_TYPE")
+
+toolchain(
+    name = "toolchain",
+    toolchain = {m4_repo} + "//rules_m4_internal:toolchain_info",
+    toolchain_type = M4_TOOLCHAIN_TYPE,
+    visibility = ["//visibility:public"],
+)
+"""
+
+_TOOLCHAIN_BIN_BUILD = """
+alias(
+    name = "m4",
+    actual = {m4_repo} + "//bin:m4",
+    visibility = ["//visibility:public"],
+)
+"""
+
+def _m4_toolchain_repository(ctx):
+    ctx.file("WORKSPACE", "workspace(name = {name})\n".format(
+        name = repr(ctx.name),
+    ))
+    ctx.file("BUILD.bazel", _TOOLCHAIN_BUILD.format(
+        m4_repo = repr(ctx.attr.m4_repository),
+    ))
+    ctx.file("bin/BUILD.bazel", _TOOLCHAIN_BIN_BUILD.format(
+        m4_repo = repr(ctx.attr.m4_repository),
+    ))
+
+m4_toolchain_repository = repository_rule(_m4_toolchain_repository, attrs = {
+    "m4_repository": attr.string(),
+})
