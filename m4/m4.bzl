@@ -14,6 +14,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+"""Bazel build rules for the m4 macro expander."""
+
 load(
     "@rules_m4//m4/internal:repository.bzl",
     _m4_repository = "m4_repository",
@@ -21,6 +23,7 @@ load(
 )
 load(
     "@rules_m4//m4/internal:toolchain.bzl",
+    _M4ToolchainInfo = "M4ToolchainInfo",
     _M4_TOOLCHAIN_TYPE = "M4_TOOLCHAIN_TYPE",
 )
 load(
@@ -32,8 +35,18 @@ load(
 M4_TOOLCHAIN_TYPE = _M4_TOOLCHAIN_TYPE
 m4_repository = _m4_repository
 m4_toolchain_repository = _m4_toolchain_repository
+M4ToolchainInfo = _M4ToolchainInfo
 
 def m4_toolchain(ctx):
+    """Returns the current [`M4ToolchainInfo`](#M4ToolchainInfo).
+
+    Args:
+        ctx: A rule context, where the rule has a toolchain dependency
+          on [`M4_TOOLCHAIN_TYPE`](#M4_TOOLCHAIN_TYPE).
+
+    Returns:
+        An [`M4ToolchainInfo`](#M4ToolchainInfo).
+    """
     return ctx.toolchains[M4_TOOLCHAIN_TYPE].m4_toolchain
 
 def _m4(ctx):
@@ -94,23 +107,57 @@ def _m4(ctx):
     )
 
 m4 = rule(
-    _m4,
+    implementation = _m4,
+    doc = """Perform macro expansion to produce an output file.
+
+This rule blocks the of execution shell commands (such as `syscmd`) by default.
+To enable expansion of a file containing shell commands, set the `m4_syscmd`
+target feature.
+
+### Example
+
+```starlark
+load("@rules_m4//m4:m4.bzl", "m4")
+
+m4(
+    name = "m4_example.txt",
+    srcs = ["m4_example.in.txt"],
+)
+```
+""",
     attrs = {
         "srcs": attr.label_list(
+            doc = "List of source files to macro-expand.",
             allow_empty = False,
             mandatory = True,
             allow_files = True,
         ),
-        "output": attr.output(),
+        "output": attr.output(
+            doc = """File to write output to. If unset, defaults to the rule
+name.
+""",
+        ),
         "freeze_state": attr.output(
+            doc = """Optional output file for GNU M4 frozen state. Must have
+extension `.m4f`.
+""",
             # Valid file extensions: [".m4f"]
             #
             # https://github.com/bazelbuild/bazel/issues/7409
         ),
         "reload_state": attr.label(
+            doc = """Optional input file for GNU M4 frozen state. Must have
+extension `.m4f`.
+""",
             allow_single_file = [".m4f"],
         ),
-        "m4_options": attr.string_list(),
+        "m4_options": attr.string_list(
+            doc = """
+Additional options to pass to the `m4` command.
+
+These will be added to the command args immediately before the source files.
+""",
+        ),
         "_capture_stdout": attr.label(
             executable = True,
             default = "@rules_m4//m4/internal:capture_stdout",
@@ -127,6 +174,15 @@ m4 = rule(
 
 # buildifier: disable=unnamed-macro
 def m4_register_toolchains(version = DEFAULT_VERSION, extra_copts = []):
+    """A helper function for m4 toolchains registration.
+
+    This workspace macro will create a [`m4_repository`](#m4_repository) named
+    `m4_v{version}` and register it as a Bazel toolchain.
+
+    Args:
+        version: A supported version of GNU M4.
+        extra_copts: Additional C compiler options to use when building GNU M4.
+    """
     check_version(version)
     repo_name = "m4_v{}".format(version)
     if repo_name not in native.existing_rules().keys():

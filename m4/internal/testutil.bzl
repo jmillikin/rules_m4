@@ -14,6 +14,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+"""Helpers for testing rules_m4."""
+
 load("@rules_m4//m4/internal:repository.bzl", "m4_repository")
 load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
 

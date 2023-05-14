@@ -14,15 +14,10 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@rules_m4//m4/internal:versions.bzl",
-    _VERSION_URLS = "VERSION_URLS",
-    _check_version = "check_version",
-)
-load(
-    "@rules_m4//m4/internal:gnulib/gnulib.bzl",
-    _gnulib_overlay = "gnulib_overlay",
-)
+"""Bazel repository rules for GNU M4."""
+
+load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
+load("@rules_m4//m4/internal:gnulib/gnulib.bzl", "gnulib_overlay")
 
 _M4_BUILD = """
 cc_library(
@@ -63,8 +58,7 @@ m4_toolchain_info(
 
 def _m4_repository(ctx):
     version = ctx.attr.version
-    _check_version(version)
-    source = _VERSION_URLS[version]
+    source = VERSION_URLS[version]
 
     ctx.download_and_extract(
         url = source["urls"],
@@ -73,7 +67,7 @@ def _m4_repository(ctx):
     )
 
     extra_copts = ctx.attr.extra_copts
-    _gnulib_overlay(ctx, m4_version = version, extra_copts = extra_copts)
+    gnulib_overlay(ctx, m4_version = version, extra_copts = extra_copts)
 
     ctx.file("WORKSPACE", "workspace(name = {name})\n".format(
         name = repr(ctx.name),
@@ -142,10 +136,32 @@ def _m4_repository(ctx):
     }, executable = False)
 
 m4_repository = repository_rule(
-    _m4_repository,
+    implementation = _m4_repository,
+    doc = """
+Repository rule for GNU M4.
+
+The resulting repository will have a `//bin:m4` executable target.
+
+### Example
+
+```starlark
+load("@rules_m4//m4:m4.bzl", "m4_repository")
+
+m4_repository(
+    name = "m4_v1.4.18",
+    version = "1.4.18",
+)
+```
+""",
     attrs = {
-        "version": attr.string(mandatory = True),
-        "extra_copts": attr.string_list(),
+        "version": attr.string(
+            doc = "A supported version of GNU M4.",
+            mandatory = True,
+            values = sorted(VERSION_URLS),
+        ),
+        "extra_copts": attr.string_list(
+            doc = "Additional C compiler options to use when building GNU M4.",
+        ),
         "_gnulib_build": attr.label(
             default = "@rules_m4//m4/internal:gnulib/gnulib.BUILD",
             allow_single_file = True,
@@ -199,6 +215,39 @@ def _m4_toolchain_repository(ctx):
         m4_repo = repr(ctx.attr.m4_repository),
     ))
 
-m4_toolchain_repository = repository_rule(_m4_toolchain_repository, attrs = {
-    "m4_repository": attr.string(),
-})
+m4_toolchain_repository = repository_rule(
+    implementation = _m4_toolchain_repository,
+    doc = """
+Toolchain repository rule for m4 toolchains.
+
+Toolchain repositories add a layer of indirection so that Bazel can resolve
+toolchains without downloading additional dependencies.
+
+The resulting repository will have the following targets:
+- `//bin:m4` (an alias into the underlying [`m4_repository`](#m4_repository))
+- `//:toolchain`, which can be registered with Bazel.
+
+### Example
+
+```starlark
+load("@rules_m4//m4:m4.bzl", "m4_repository", "m4_toolchain_repository")
+
+m4_repository(
+    name = "m4_v1.4.18",
+    version = "1.4.18",
+)
+
+m4_toolchain_repository(
+    name = "m4",
+    m4_repository = "@m4_v1.4.18",
+)
+
+register_toolchains("@m4//:toolchain")
+```
+""",
+    attrs = {
+        "m4_repository": attr.string(
+            doc = "The name of an [`m4_repository`](#m4_repository).",
+        ),
+    },
+)

@@ -14,6 +14,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+"""Helpers and shims for building the GNU anti-portability library."""
+
 _GNULIB_VERSION = "788db09a9f88abbef73c97e8d7291c40455336d8"
 _GNULIB_SHA256 = "27ef79e649c95856e05f82414977f5e05d009310f91916b64806d1c61f913485"
 
@@ -67,6 +69,14 @@ char *secure_getenv(char const *name);
 """
 
 def gnulib_overlay(ctx, m4_version, extra_copts = []):
+    """Download the gnulib overlay and apply compatibility patches.
+
+    Args:
+        ctx: A `repository_ctx`.
+        m4_version: Which version of GNU M4 is being built.
+        extra_copts: Additional C compiler options to use when building gnulib.
+
+    """
     ctx.download_and_extract(
         url = [_URL_BASE.format(_GNULIB_VERSION)],
         sha256 = _GNULIB_SHA256,

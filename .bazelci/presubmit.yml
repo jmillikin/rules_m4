@@ -2,7 +2,7 @@
 validate_config: 1
 buildifier:
   version: 6.1.2
-  warnings: "-module-docstring,-function-docstring,-bzl-visibility,-attr-cfg"
+  warnings: "-bzl-visibility,-attr-cfg"
 tasks:
   ubuntu_1804_gcc:
     platform: ubuntu1804

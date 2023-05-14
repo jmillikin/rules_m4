@@ -14,6 +14,8 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+"""Supported versions of GNU M4."""
+
 _MIRRORS = [
     "https://mirrors.kernel.org/gnu/m4/",
     "https://ftp.gnu.org/gnu/m4/",

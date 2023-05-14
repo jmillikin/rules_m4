@@ -14,10 +14,22 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
+"""Bazel toolchain for the m4 macro expander."""
+
 M4_TOOLCHAIN_TYPE = "@rules_m4//m4:toolchain_type"
 
-# buildifier: disable=provider-params
-M4ToolchainInfo = provider(fields = ["all_files", "m4_tool", "m4_env"])
+M4ToolchainInfo = provider(
+    doc = "Provider for an m4 toolchain.",
+    fields = {
+        "all_files": """A `depset` containing all files comprising this
+m4 toolchain.
+""",
+        "m4_tool": """A `FilesToRunProvider` for the `m4` binary.""",
+        "m4_env": """
+Additional environment variables to set when running `m4_tool`.
+""",
+    },
+)
 
 def _template_vars(toolchain):
     return platform_common.TemplateVariableInfo({
