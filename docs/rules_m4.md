@@ -123,7 +123,7 @@ register_toolchains("@m4//:toolchain")
 | Name  | Description | Type | Mandatory | Default |
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="m4_toolchain_repository-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
-| <a id="m4_toolchain_repository-m4_repository"></a>m4_repository |  The name of an [<code>m4_repository</code>](#m4_repository).   | String | optional | <code>""</code> |
+| <a id="m4_toolchain_repository-m4_repository"></a>m4_repository |  The name of an [<code>m4_repository</code>](#m4_repository).   | String | required |  |
 | <a id="m4_toolchain_repository-repo_mapping"></a>repo_mapping |  A dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.&lt;p&gt;For example, an entry <code>"@foo": "@bar"</code> declares that, for any time this repository depends on <code>@foo</code> (such as a dependency on <code>@foo//some:target</code>, it should actually resolve that dependency within globally-declared <code>@bar</code> (<code>@bar//some:target</code>).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | required |  |
 
 

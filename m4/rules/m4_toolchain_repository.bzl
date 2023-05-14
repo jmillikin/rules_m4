@@ -79,6 +79,7 @@ register_toolchains("@m4//:toolchain")
     attrs = {
         "m4_repository": attr.string(
             doc = "The name of an [`m4_repository`](#m4_repository).",
+            mandatory = True,
         ),
     },
 )
