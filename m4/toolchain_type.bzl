@@ -14,18 +14,18 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Helpers for testing rules_m4 in a bzlmod-enabled workspace."""
+"""Helpers for depending on m4 as a toolchain."""
 
-load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
-load("@rules_m4//m4/rules:m4_repository.bzl", "m4_repository")
-load(":testutil.bzl", "rules_m4_testutil")
+M4_TOOLCHAIN_TYPE = "@rules_m4//m4:toolchain_type"
 
-def _rules_m4_testutil_ext(_module_ctx):
-    rules_m4_testutil(name = "rules_m4_testutil")
-    for version in VERSION_URLS:
-        m4_repository(
-            name = "m4_v{}".format(version),
-            version = version,
-        )
+def m4_toolchain(ctx):
+    """Returns the current [`M4ToolchainInfo`](#M4ToolchainInfo).
 
-rules_m4_testutil_ext = module_extension(_rules_m4_testutil_ext)
+    Args:
+        ctx: A rule context, where the rule has a toolchain dependency
+          on [`M4_TOOLCHAIN_TYPE`](#M4_TOOLCHAIN_TYPE).
+
+    Returns:
+        An [`M4ToolchainInfo`](#M4ToolchainInfo).
+    """
+    return ctx.toolchains[M4_TOOLCHAIN_TYPE].m4_toolchain

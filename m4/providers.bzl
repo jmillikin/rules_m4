@@ -1,4 +1,4 @@
-# Copyright 2023 the rules_m4 authors.
+# Copyright 2018 the rules_m4 authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,18 +14,17 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Helpers for testing rules_m4 in a bzlmod-enabled workspace."""
+"""Providers produced by rules_m4 rules."""
 
-load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
-load("@rules_m4//m4/rules:m4_repository.bzl", "m4_repository")
-load(":testutil.bzl", "rules_m4_testutil")
-
-def _rules_m4_testutil_ext(_module_ctx):
-    rules_m4_testutil(name = "rules_m4_testutil")
-    for version in VERSION_URLS:
-        m4_repository(
-            name = "m4_v{}".format(version),
-            version = version,
-        )
-
-rules_m4_testutil_ext = module_extension(_rules_m4_testutil_ext)
+M4ToolchainInfo = provider(
+    doc = "Provider for an m4 toolchain.",
+    fields = {
+        "all_files": """A `depset` containing all files comprising this
+m4 toolchain.
+""",
+        "m4_tool": """A `FilesToRunProvider` for the `m4` binary.""",
+        "m4_env": """
+Additional environment variables to set when running `m4_tool`.
+""",
+    },
+)

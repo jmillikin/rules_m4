@@ -14,7 +14,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Bazel repository rules for GNU M4."""
+"""Definition of the `m4_repository` repository rule."""
 
 load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
 load("@rules_m4//m4/internal:gnulib/gnulib.bzl", "gnulib_overlay")
@@ -47,7 +47,7 @@ cc_binary(
 """
 
 _RULES_M4_INTERNAL_BUILD = """
-load("@rules_m4//m4/internal:toolchain.bzl", "m4_toolchain_info")
+load("@rules_m4//m4/internal:toolchain_info.bzl", "m4_toolchain_info")
 
 m4_toolchain_info(
     name = "toolchain_info",
@@ -181,73 +181,6 @@ m4_repository(
         "_gnulib_config_openbsd_h": attr.label(
             default = "//m4/internal:gnulib/config-openbsd.h",
             allow_single_file = True,
-        ),
-    },
-)
-
-_TOOLCHAIN_BUILD = """
-load("@rules_m4//m4/internal:toolchain.bzl", "M4_TOOLCHAIN_TYPE")
-
-toolchain(
-    name = "toolchain",
-    toolchain = {m4_repo} + "//rules_m4_internal:toolchain_info",
-    toolchain_type = M4_TOOLCHAIN_TYPE,
-    visibility = ["//visibility:public"],
-)
-"""
-
-_TOOLCHAIN_BIN_BUILD = """
-alias(
-    name = "m4",
-    actual = {m4_repo} + "//bin:m4",
-    visibility = ["//visibility:public"],
-)
-"""
-
-def _m4_toolchain_repository(ctx):
-    ctx.file("WORKSPACE", "workspace(name = {name})\n".format(
-        name = repr(ctx.name),
-    ))
-    ctx.file("BUILD.bazel", _TOOLCHAIN_BUILD.format(
-        m4_repo = repr(ctx.attr.m4_repository),
-    ))
-    ctx.file("bin/BUILD.bazel", _TOOLCHAIN_BIN_BUILD.format(
-        m4_repo = repr(ctx.attr.m4_repository),
-    ))
-
-m4_toolchain_repository = repository_rule(
-    implementation = _m4_toolchain_repository,
-    doc = """
-Toolchain repository rule for m4 toolchains.
-
-Toolchain repositories add a layer of indirection so that Bazel can resolve
-toolchains without downloading additional dependencies.
-
-The resulting repository will have the following targets:
-- `//bin:m4` (an alias into the underlying [`m4_repository`](#m4_repository))
-- `//:toolchain`, which can be registered with Bazel.
-
-### Example
-
-```starlark
-load("@rules_m4//m4:m4.bzl", "m4_repository", "m4_toolchain_repository")
-
-m4_repository(
-    name = "m4_v1.4.18",
-    version = "1.4.18",
-)
-
-m4_toolchain_repository(
-    name = "m4",
-    m4_repository = "@m4_v1.4.18",
-)
-
-register_toolchains("@m4//:toolchain")
-```
-""",
-    attrs = {
-        "m4_repository": attr.string(
-            doc = "The name of an [`m4_repository`](#m4_repository).",
         ),
     },
 )

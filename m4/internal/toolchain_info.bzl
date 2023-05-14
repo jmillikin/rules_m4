@@ -16,20 +16,7 @@
 
 """Bazel toolchain for the m4 macro expander."""
 
-M4_TOOLCHAIN_TYPE = "@rules_m4//m4:toolchain_type"
-
-M4ToolchainInfo = provider(
-    doc = "Provider for an m4 toolchain.",
-    fields = {
-        "all_files": """A `depset` containing all files comprising this
-m4 toolchain.
-""",
-        "m4_tool": """A `FilesToRunProvider` for the `m4` binary.""",
-        "m4_env": """
-Additional environment variables to set when running `m4_tool`.
-""",
-    },
-)
+load("@rules_m4//m4:providers.bzl", "M4ToolchainInfo")
 
 def _template_vars(toolchain):
     return platform_common.TemplateVariableInfo({
@@ -63,22 +50,6 @@ m4_toolchain_info = rule(
     },
     provides = [
         platform_common.ToolchainInfo,
-        platform_common.TemplateVariableInfo,
-    ],
-)
-
-def _m4_toolchain_alias(ctx):
-    toolchain = ctx.toolchains[M4_TOOLCHAIN_TYPE].m4_toolchain
-    return [
-        DefaultInfo(files = toolchain.all_files),
-        _template_vars(toolchain),
-    ]
-
-m4_toolchain_alias = rule(
-    _m4_toolchain_alias,
-    toolchains = [M4_TOOLCHAIN_TYPE],
-    provides = [
-        DefaultInfo,
         platform_common.TemplateVariableInfo,
     ],
 )

@@ -27,7 +27,7 @@ filegroup(
 """
 
 _TOOLCHAINS_BUILD = """
-load("@rules_m4//m4/internal:toolchain.bzl", "M4_TOOLCHAIN_TYPE")
+load("@rules_m4//m4:toolchain_type.bzl", "M4_TOOLCHAIN_TYPE")
 load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
 
 [toolchain(
