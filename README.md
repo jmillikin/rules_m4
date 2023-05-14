@@ -9,6 +9,8 @@ a dependency in other rules via the Bazel toolchain system.
 
 Currently, the only implementation of m4 supported by this ruleset is [GNU M4].
 
+API reference: [docs/rules_m4.md](docs/rules_m4.md)
+
 [m4]: https://en.wikipedia.org/wiki/M4_(computer_language)
 [Bison]: https://www.gnu.org/software/bison/
 [Flex]: https://github.com/westes/flex

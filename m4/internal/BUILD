@@ -1,3 +1,12 @@
+filegroup(
+    name = "bzl_srcs",
+    srcs = glob([
+        "*.bzl",
+        "gnulib/*.bzl",
+    ]),
+    visibility = ["//:__subpackages__"],
+)
+
 cc_binary(
     name = "capture_stdout",
     srcs = ["capture_stdout.c"],
