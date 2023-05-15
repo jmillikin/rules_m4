@@ -23,7 +23,7 @@ API reference: [docs/rules_m4.md](docs/rules_m4.md)
 Add the following to your `MODULE.bazel`:
 
 ```python
-bazel_dep(name = "rules_m4", version = "0.2.2")
+bazel_dep(name = "rules_m4", version = "0.2.3")
 ```
 
 To specify a version or build with additional C compiler options, use the
@@ -58,9 +58,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 http_archive(
     name = "rules_m4",
     # Obtain the package checksum from the release page:
-    # https://github.com/jmillikin/rules_m4/releases/tag/v0.2.2
+    # https://github.com/jmillikin/rules_m4/releases/tag/v0.2.3
     sha256 = "",
-    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.2/rules_m4-v0.2.2.tar.xz"],
+    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.3/rules_m4-v0.2.3.tar.xz"],
 )
 
 load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
