@@ -16,8 +16,8 @@
 
 """Definition of the `m4_repository` repository rule."""
 
-load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
-load("@rules_m4//m4/internal:gnulib/gnulib.bzl", "gnulib_overlay")
+load("//m4/internal:versions.bzl", "VERSION_URLS")
+load("//m4/internal:gnulib/gnulib.bzl", "gnulib_overlay")
 
 _M4_BUILD = """
 cc_library(
@@ -163,27 +163,27 @@ m4_repository(
             doc = "Additional C compiler options to use when building GNU M4.",
         ),
         "_gnulib_build": attr.label(
-            default = "@rules_m4//m4/internal:gnulib/gnulib.BUILD",
+            default = Label("//m4/internal:gnulib/gnulib.BUILD"),
             allow_single_file = True,
         ),
         "_gnulib_config_darwin_h": attr.label(
-            default = "//m4/internal:gnulib/config-darwin.h",
+            default = Label("//m4/internal:gnulib/config-darwin.h"),
             allow_single_file = True,
         ),
         "_gnulib_config_linux_h": attr.label(
-            default = "//m4/internal:gnulib/config-linux.h",
+            default = Label("//m4/internal:gnulib/config-linux.h"),
             allow_single_file = True,
         ),
         "_gnulib_config_windows_h": attr.label(
-            default = "//m4/internal:gnulib/config-windows.h",
+            default = Label("//m4/internal:gnulib/config-windows.h"),
             allow_single_file = True,
         ),
         "_gnulib_config_openbsd_h": attr.label(
-            default = "//m4/internal:gnulib/config-openbsd.h",
+            default = Label("//m4/internal:gnulib/config-openbsd.h"),
             allow_single_file = True,
         ),
         "_gnulib_config_freebsd_h": attr.label(
-            default = "//m4/internal:gnulib/config-freebsd.h",
+            default = Label("//m4/internal:gnulib/config-freebsd.h"),
             allow_single_file = True,
         ),
     },

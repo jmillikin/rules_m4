@@ -1,4 +1,4 @@
-load("@rules_m4//m4:m4.bzl", "m4")
+load("//m4:m4.bzl", "m4")
 
 m4(
     name = "expansion_test",
@@ -15,7 +15,7 @@ genrule(
 cp $(location expansion_test.in) genrule_test.in
 $(M4) --synclines genrule_test.in > $@
 """,
-    toolchains = ["@rules_m4//m4:current_m4_toolchain"],
+    toolchains = ["//m4:current_m4_toolchain"],
 )
 
 m4(

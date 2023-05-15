@@ -16,8 +16,8 @@
 
 """Helpers for testing rules_m4 in a bzlmod-enabled workspace."""
 
-load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
-load("@rules_m4//m4/rules:m4_repository.bzl", "m4_repository")
+load("//m4/internal:versions.bzl", "VERSION_URLS")
+load("//m4/rules:m4_repository.bzl", "m4_repository")
 load(":testutil.bzl", "rules_m4_testutil")
 
 def _rules_m4_testutil_ext(_module_ctx):

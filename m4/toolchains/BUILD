@@ -1,5 +1,5 @@
-load("@rules_m4//m4:toolchain_type.bzl", "M4_TOOLCHAIN_TYPE")
-load("@rules_m4//m4/internal:versions.bzl", "VERSION_URLS")
+load("//m4:toolchain_type.bzl", "M4_TOOLCHAIN_TYPE")
+load("//m4/internal:versions.bzl", "VERSION_URLS")
 
 [toolchain(
     name = "v{}".format(version),

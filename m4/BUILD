@@ -1,4 +1,4 @@
-load("@rules_m4//m4/internal:toolchain_alias.bzl", "m4_toolchain_alias")
+load("//m4/internal:toolchain_alias.bzl", "m4_toolchain_alias")
 
 filegroup(
     name = "bzl_srcs",

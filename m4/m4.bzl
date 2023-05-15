@@ -17,29 +17,29 @@
 """Bazel rules for the m4 macro expander."""
 
 load(
-    "@rules_m4//m4:providers.bzl",
+    "//m4:providers.bzl",
     _M4ToolchainInfo = "M4ToolchainInfo",
 )
 load(
-    "@rules_m4//m4:toolchain_type.bzl",
+    "//m4:toolchain_type.bzl",
     _M4_TOOLCHAIN_TYPE = "M4_TOOLCHAIN_TYPE",
     _m4_toolchain = "m4_toolchain",
 )
 load(
-    "@rules_m4//m4/internal:versions.bzl",
+    "//m4/internal:versions.bzl",
     "DEFAULT_VERSION",
     "check_version",
 )
 load(
-    "@rules_m4//m4/rules:m4.bzl",
+    "//m4/rules:m4.bzl",
     _m4 = "m4",
 )
 load(
-    "@rules_m4//m4/rules:m4_repository.bzl",
+    "//m4/rules:m4_repository.bzl",
     _m4_repository = "m4_repository",
 )
 load(
-    "@rules_m4//m4/rules:m4_toolchain_repository.bzl",
+    "//m4/rules:m4_toolchain_repository.bzl",
     _m4_toolchain_repository = "m4_toolchain_repository",
 )
 

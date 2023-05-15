@@ -17,7 +17,7 @@
 """Definition of the `m4` build rule."""
 
 load(
-    "@rules_m4//m4:toolchain_type.bzl",
+    "//m4:toolchain_type.bzl",
     "M4_TOOLCHAIN_TYPE",
     "m4_toolchain",
 )
@@ -133,12 +133,12 @@ These will be added to the command args immediately before the source files.
         ),
         "_capture_stdout": attr.label(
             executable = True,
-            default = "@rules_m4//m4/internal:capture_stdout",
+            default = Label("//m4/internal:capture_stdout"),
             cfg = "host",
         ),
         "_deny_shell": attr.label(
             executable = True,
-            default = "@rules_m4//m4/internal:deny_shell",
+            default = Label("//m4/internal:deny_shell"),
             cfg = "host",
         ),
     },

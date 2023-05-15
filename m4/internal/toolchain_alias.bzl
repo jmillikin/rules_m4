@@ -17,7 +17,7 @@
 """Shim rule for using m4 in a genrule."""
 
 load(
-    "@rules_m4//m4:toolchain_type.bzl",
+    "//m4:toolchain_type.bzl",
     "M4_TOOLCHAIN_TYPE",
     "m4_toolchain",
 )

@@ -16,7 +16,7 @@
 
 """Bazel toolchain for the m4 macro expander."""
 
-load("@rules_m4//m4:providers.bzl", "M4ToolchainInfo")
+load("//m4:providers.bzl", "M4ToolchainInfo")
 
 def _template_vars(toolchain):
     return platform_common.TemplateVariableInfo({
