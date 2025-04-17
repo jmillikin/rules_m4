@@ -7,6 +7,12 @@
 using bazel::tools::cpp::runfiles::Runfiles;
 using std::string;
 
+#ifdef _WIN32
+#define PATH_SLASH '\\'
+#else
+#define PATH_SLASH '/'
+#endif
+
 class RulesM4 : public ::testing::Test {
   protected:
     void SetUp() override {
@@ -40,8 +46,9 @@ class RulesM4 : public ::testing::Test {
         string test_binary(test_binary_ptr);
         string test_workspace(test_workspace_ptr);
 
-        size_t slash = test_binary.find_last_of('/');
+        size_t slash = test_binary.find_last_of(PATH_SLASH);
         if (slash == string::npos) {
+            std::cerr << "test_binary: " << test_binary << std::endl;
             EXPECT_NE(slash, string::npos);
             return "";
         }
