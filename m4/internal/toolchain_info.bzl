@@ -44,7 +44,7 @@ m4_toolchain_info = rule(
         "m4_tool": attr.label(
             mandatory = True,
             executable = True,
-            cfg = "host",
+            cfg = "exec",
         ),
         "m4_env": attr.string_dict(),
     },
