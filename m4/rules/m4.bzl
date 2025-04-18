@@ -134,12 +134,12 @@ These will be added to the command args immediately before the source files.
         "_capture_stdout": attr.label(
             executable = True,
             default = Label("//m4/internal:capture_stdout"),
-            cfg = "host",
+            cfg = "exec",
         ),
         "_deny_shell": attr.label(
             executable = True,
             default = Label("//m4/internal:deny_shell"),
-            cfg = "host",
+            cfg = "exec",
         ),
     },
     toolchains = [M4_TOOLCHAIN_TYPE],
