@@ -1,16 +1,29 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@io_bazel_stardoc//stardoc:stardoc.bzl", "stardoc")
 
-bzl_library(
-    name = "rules_m4_bzl_srcs",
-    srcs = ["//m4:bzl_srcs"],
+stardoc(
+    name = "m4_md",
+    out = "m4.md",
+    header_template = ":header.vm",
+    input = "//m4:m4_bzl",
+    deps = ["//m4:bzl_srcs"],
 )
 
 stardoc(
+    name = "m4_repository_ext_md",
+    out = "m4_repository_ext.md",
+    header_template = ":empty.vm",
+    input = "//m4/extensions:m4_repository_ext_bzl",
+    deps = ["//m4:bzl_srcs"],
+)
+
+genrule(
     name = "rules_m4_md",
-    out = "rules_m4.md",
-    input = "rules_m4_md.bzl",
-    deps = [":rules_m4_bzl_srcs"],
+    srcs = [
+        ":m4_md",
+        ":m4_repository_ext_md",
+    ],
+    outs = ["rules_m4.md"],
+    cmd = "cat $(SRCS) > $@",
 )
 
 filegroup(
