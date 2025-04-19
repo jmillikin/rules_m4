@@ -1,3 +1,4 @@
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//m4:m4.bzl", "m4")
 
 m4(
