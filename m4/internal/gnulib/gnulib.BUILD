@@ -17,16 +17,16 @@
 cc_library(
     name = "config_h",
     hdrs = select({
-        "@bazel_tools//src/conditions:darwin": [
+        "@platforms//os:macos": [
             "config-darwin/config.h",
         ],
-        "@bazel_tools//src/conditions:windows": [
+        "@platforms//os:windows": [
             "config-windows/config.h",
         ],
-        "@bazel_tools//src/conditions:openbsd": [
+        "@platforms//os:openbsd": [
             "config-openbsd/config.h",
         ],
-        "@bazel_tools//src/conditions:freebsd": [
+        "@platforms//os:freebsd": [
             "config-freebsd/config.h",
         ],
         "//conditions:default": [
@@ -34,16 +34,16 @@ cc_library(
         ],
     }),
     includes = select({
-        "@bazel_tools//src/conditions:darwin": [
+        "@platforms//os:macos": [
             "config-darwin",
         ],
-        "@bazel_tools//src/conditions:windows": [
+        "@platforms//os:windows": [
             "config-windows",
         ],
-        "@bazel_tools//src/conditions:openbsd": [
+        "@platforms//os:openbsd": [
             "config-openbsd",
         ],
-        "@bazel_tools//src/conditions:freebsd": [
+        "@platforms//os:freebsd": [
             "config-freebsd",
         ],
         "//conditions:default": [
@@ -229,8 +229,8 @@ cc_library(
     # https://github.com/bazelbuild/bazel/issues/3828
     # https://github.com/bazelbuild/bazel/issues/6337
     srcs = _GNULIB_SRCS + _GNULIB_HDRS + select({
-        "@bazel_tools//src/conditions:darwin": _GNULIB_DARWIN_SRCS,
-        "@bazel_tools//src/conditions:windows": _GNULIB_WINDOWS_SRCS,
+        "@platforms//os:macos": _GNULIB_DARWIN_SRCS,
+        "@platforms//os:windows": _GNULIB_WINDOWS_SRCS,
         "//conditions:default": _GNULIB_LINUX_SRCS,
     }),
     hdrs = _GNULIB_HDRS,
@@ -245,9 +245,9 @@ cc_library(
     ],
     visibility = ["//:__pkg__"],
     deps = [":config_h"] + select({
-        "@bazel_tools//src/conditions:windows": [":gnulib_windows_shims"],
-        "@bazel_tools//src/conditions:openbsd": [":stub_alloca_h"],
-        "@bazel_tools//src/conditions:freebsd": [":maybe_alloca_h"],
+        "@platforms//os:windows": [":gnulib_windows_shims"],
+        "@platforms//os:openbsd": [":stub_alloca_h"],
+        "@platforms//os:freebsd": [":maybe_alloca_h"],
         "//conditions:default": [],
     }),
 )
