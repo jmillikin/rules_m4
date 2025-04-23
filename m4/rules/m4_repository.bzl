@@ -20,6 +20,8 @@ load("//m4/internal:gnulib/gnulib.bzl", "gnulib_overlay")
 load("//m4/internal:versions.bzl", "VERSION_URLS")
 
 _M4_BUILD = """
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+
 cc_library(
     name = "m4_lib",
     srcs = glob([
@@ -45,6 +47,8 @@ config_setting(
 """
 
 _M4_BIN_BUILD = """
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
 M4_LINKOPTS = select({{
     "//:cc_compiler_msvc": [
         # LNK4001: no object files specified; libraries used
