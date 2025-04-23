@@ -30,9 +30,13 @@ load(
     "m4_toolchain_repository",
 )
 
-def _m4_repo_name(version, extra_copts):
-    # copts_key = "{:08X}".format(hash(repr(extra_copts)))
-    copts_key = "%X" % (hash(repr(extra_copts)),)
+def _m4_repo_name(version, extra_copts, extra_linkopts):
+    copts_key_str = ""
+    if extra_copts:
+        copts_key_str = repr(extra_copts)
+    if extra_linkopts:
+        copts_key_str = "{}_{}".format(copts_key_str, repr(extra_linkopts))
+    copts_key = "%X" % (hash(copts_key_str),)
     if len(copts_key) < 8:
         copts_key = "00000000"[:8 - len(copts_key)] + copts_key
     return "m4_v{}__cfg{}".format(version, copts_key)
@@ -48,7 +52,11 @@ def _m4_repository_ext(module_ctx):
             if not name:
                 name = "m4_v{}".format(config.version)
 
-            m4_repo_name = _m4_repo_name(config.version, config.extra_copts)
+            m4_repo_name = _m4_repo_name(
+                config.version,
+                config.extra_copts,
+                config.extra_linkopts,
+            )
 
             m4_toolchain_repository(
                 name = name,
@@ -67,6 +75,7 @@ def _m4_repository_ext(module_ctx):
                     name = m4_repo_name,
                     version = config.version,
                     extra_copts = config.extra_copts,
+                    extra_linkopts = config.extra_linkopts,
                 )
 
     return module_ctx.extension_metadata(
@@ -89,6 +98,9 @@ If unset, the repository name will default to `"m4_v{version}"`.
     ),
     "extra_copts": attr.string_list(
         doc = "Additional C compiler options to use when building GNU M4.",
+    ),
+    "extra_linkopts": attr.string_list(
+        doc = "Additional linker options to use when building GNU M4.",
     ),
 }
 

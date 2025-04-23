@@ -45,19 +45,19 @@ config_setting(
 """
 
 _M4_BIN_BUILD = """
-M4_LINKOPTS = select({
+M4_LINKOPTS = select({{
     "//:cc_compiler_msvc": [
         # LNK4001: no object files specified; libraries used
         "/IGNORE:4001",
     ],
     "//conditions:default": [],
-})
+}})
 
 cc_binary(
     name = "m4",
+    linkopts = M4_LINKOPTS + {EXTRA_LINKOPTS},
     visibility = ["//visibility:public"],
     deps = ["//:m4_lib"],
-    linkopts = M4_LINKOPTS,
 )
 """
 
@@ -88,7 +88,9 @@ def _m4_repository(ctx):
         name = repr(ctx.name),
     ))
     ctx.file("BUILD.bazel", _M4_BUILD.format(EXTRA_COPTS = extra_copts))
-    ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD)
+    ctx.file("bin/BUILD.bazel", _M4_BIN_BUILD.format(
+        EXTRA_LINKOPTS = ctx.attr.extra_linkopts,
+    ))
     ctx.file("rules_m4_internal/BUILD.bazel", _RULES_M4_INTERNAL_BUILD)
 
     # Let M4 v1.4.15 build with contemporary Gnulib.
@@ -176,6 +178,9 @@ m4_repository(
         ),
         "extra_copts": attr.string_list(
             doc = "Additional C compiler options to use when building GNU M4.",
+        ),
+        "extra_linkopts": attr.string_list(
+            doc = "Additional linker options to use when building GNU M4.",
         ),
         "_gnulib_build": attr.label(
             default = Label("//m4/internal:gnulib/gnulib.BUILD"),
