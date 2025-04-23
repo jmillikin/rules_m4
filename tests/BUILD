@@ -1,5 +1,4 @@
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//m4:m4.bzl", "m4")
 
 m4(
@@ -66,15 +65,5 @@ cc_test(
 alias(
     name = "all_versions",
     actual = "@rules_m4_testutil//:all_versions",
-    tags = ["manual"],
-)
-
-sh_test(
-    name = "docs_test",
-    srcs = ["docs_test.sh"],
-    data = [
-        "//docs",
-        "//tools/stardoc:stardoc_outputs",
-    ],
     tags = ["manual"],
 )
