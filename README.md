@@ -18,8 +18,6 @@ API reference: [docs/rules_m4.md](docs/rules_m4.md)
 
 ## Setup
 
-### As a module dependency (bzlmod)
-
 Add the following to your `MODULE.bazel`:
 
 ```python
@@ -43,50 +41,11 @@ use_repo(m4, "m4")
 register_toolchains("@m4//:toolchain")
 ```
 
-Note that repository names registered with a given bzlmod module extension must be unique within the scope of that extension. See the [Bazel module extensions]
+Note that repository names registered with a given bzlmod module extension must
+be unique within the scope of that extension. See the [Bazel module extensions]
 documentation for more details.
 
 [Bazel module extensions]: https://bazel.build/external/extension
-
-### As a workspace dependency
-
-Add the following to your `WORKSPACE.bazel`:
-
-```python
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-
-http_archive(
-    name = "rules_m4",
-    # Obtain the package checksum from the release page:
-    # https://github.com/jmillikin/rules_m4/releases/tag/v0.2.5
-    sha256 = "",
-    urls = ["https://github.com/jmillikin/rules_m4/releases/download/v0.2.5/rules_m4-v0.2.5.tar.xz"],
-)
-
-load("@rules_m4//m4:m4.bzl", "m4_register_toolchains")
-
-m4_register_toolchains(version = "1.4.18")
-```
-
-To specify a version or build with additional C compiler options, use the
-`m4_repository` and `m4_toolchain_repository` repository rules:
-
-```python
-load("@rules_m4//m4:m4.bzl", "m4_repository", "m4_toolchain_repository")
-
-m4_repository(
-    name = "m4_v1.4.17_fast",
-    version = "1.4.17",
-    extra_copts = ["-O3"],
-)
-
-m4_toolchain_repository(
-    name = "m4_toolchain_v1.4.17_fast",
-    m4_repository = "@m4_v1.4.17_fast",
-)
-
-register_toolchains("@m4_toolchain_v1.4.17_fast//:toolchain")
-```
 
 ## Examples
 
