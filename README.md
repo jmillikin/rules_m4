@@ -21,7 +21,7 @@ API reference: [docs/rules_m4.md](docs/rules_m4.md)
 Add the following to your `MODULE.bazel`:
 
 ```python
-bazel_dep(name = "rules_m4", version = "0.2.5")
+bazel_dep(name = "rules_m4", version = "0.3")
 ```
 
 To specify a version or build with additional C compiler options, use the
