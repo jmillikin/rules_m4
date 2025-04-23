@@ -55,6 +55,7 @@ M4_LINKOPTS = select({{
 
 cc_binary(
     name = "m4",
+    features = ["-default_link_libs"],
     linkopts = M4_LINKOPTS + {EXTRA_LINKOPTS},
     visibility = ["//visibility:public"],
     deps = ["//:m4_lib"],
