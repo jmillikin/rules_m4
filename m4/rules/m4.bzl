@@ -29,7 +29,7 @@ def _m4(ctx):
     if stdout == None:
         stdout = ctx.actions.declare_file(ctx.attr.name)
 
-    inputs = list(ctx.files.srcs)
+    inputs = list(ctx.files.srcs) + list(ctx.files.data)
     outputs = [stdout]
 
     args = ctx.actions.args()
@@ -109,6 +109,12 @@ m4(
             doc = """File to write output to. If unset, defaults to the rule
 name.
 """,
+        ),
+        "data": attr.label_list(
+            doc = "List of additional files to m4.",
+            default = [],
+            mandatory = False,
+            allow_files = True,
         ),
         "freeze_state": attr.output(
             doc = """Optional output file for GNU M4 frozen state. Must have
