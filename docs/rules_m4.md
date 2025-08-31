@@ -11,7 +11,7 @@ Bazel rules for the m4 macro expander.
 <pre>
 load("@rules_m4//m4:m4.bzl", "m4")
 
-m4(<a href="#m4-name">name</a>, <a href="#m4-srcs">srcs</a>, <a href="#m4-freeze_state">freeze_state</a>, <a href="#m4-m4_options">m4_options</a>, <a href="#m4-output">output</a>, <a href="#m4-reload_state">reload_state</a>)
+m4(<a href="#m4-name">name</a>, <a href="#m4-srcs">srcs</a>, <a href="#m4-data">data</a>, <a href="#m4-freeze_state">freeze_state</a>, <a href="#m4-m4_options">m4_options</a>, <a href="#m4-output">output</a>, <a href="#m4-reload_state">reload_state</a>)
 </pre>
 
 Perform macro expansion to produce an output file.
@@ -38,6 +38,7 @@ m4(
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="m4-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="m4-srcs"></a>srcs |  List of source files to macro-expand.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | required |  |
+| <a id="m4-data"></a>data |  List of additional files to m4.   | <a href="https://bazel.build/concepts/labels">List of labels</a> | optional |  `[]`  |
 | <a id="m4-freeze_state"></a>freeze_state |  Optional output file for GNU M4 frozen state. Must have extension `.m4f`.   | <a href="https://bazel.build/concepts/labels">Label</a>; <a href="https://bazel.build/reference/be/common-definitions#configurable-attributes">nonconfigurable</a> | optional |  `None`  |
 | <a id="m4-m4_options"></a>m4_options |  Additional options to pass to the `m4` command.<br><br>These will be added to the command args immediately before the source files.   | List of strings | optional |  `[]`  |
 | <a id="m4-output"></a>output |  File to write output to. If unset, defaults to the rule name.   | <a href="https://bazel.build/concepts/labels">Label</a>; <a href="https://bazel.build/reference/be/common-definitions#configurable-attributes">nonconfigurable</a> | optional |  `None`  |
