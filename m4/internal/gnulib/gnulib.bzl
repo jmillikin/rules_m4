@@ -185,6 +185,40 @@ static const char * _replaced_get_charset_aliases (void)
         "static void\ncleanup ()\n{": "static void\ncleanup (void)\n{",
     })
 
+    # gnulib/lib/error.h is guarded by the `#ifdef _ERROR_H` guard.
+    # However, there is a header in `libc6` also called error.h
+    # which is guarded by the same clause.
+    # If the libc header is included earlier in the inclusion order, compilation fails.
+    # To avoid conflict, we rename the file and the guard to gnulib-error,
+    # and change all the files that import it to import the new file.
+    ctx.template("gnulib/lib/gnulib-error.h", "gnulib/lib/error.h", substitutions = {
+        "_ERROR_H": "_GNULIB_ERROR_H",
+    })
+
+    # Delete to avoid conflicts with duplicated symbols.
+    ctx.delete("gnulib/lib/error.h")
+
+    # List generated with:
+    #  rg -L "#include \"error.h\"" | awk -F":" '{print "\"gnulib/"$1"\","}'
+    #
+    # May get out of date as we support new versions of m4.
+    files_that_import_error = [
+        "gnulib/lib/clean-temp.c",
+        "gnulib/lib/closein.c",
+        "gnulib/lib/error.c",
+        "gnulib/lib/xprintf.c",
+        "gnulib/lib/closeout.c",
+        "gnulib/lib/wait-process.c",
+        "gnulib/lib/xalloc-die.c",
+        "gnulib/lib/spawn-pipe.c",
+        "gnulib/lib/execute.c",
+        "gnulib/lib/verror.h",
+    ]
+    for file in files_that_import_error:
+        ctx.template(file, file, substitutions = {
+            '#include "error.h"': '#include "gnulib-error.h"',
+        })
+
 _WINDOWS_STDLIB_SHIMS = [
     "alloca",
     "errno",
