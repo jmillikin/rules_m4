@@ -31,10 +31,7 @@ cc_library(
         "src/stackovf.c",
         "src/ansi2knr.c",
     ]),
-    copts = [
-      "-DHAVE_CONFIG_H",
-      "-UDEBUG",
-    ] + {EXTRA_COPTS},
+    copts = ["-DHAVE_CONFIG_H", "-UDEBUG"] + {EXTRA_COPTS},
     visibility = ["//bin:__pkg__"],
     deps = [
         "//gnulib:config_h",
@@ -89,7 +86,7 @@ def _m4_repository(ctx):
         stripPrefix = "m4-{}".format(version),
     )
 
-    extra_copts = [opt.format(REPO_NAME = ctx.name) for opt in ctx.attr.extra_copts]
+    extra_copts = ctx.attr.extra_copts
     gnulib_overlay(ctx, m4_version = version, extra_copts = extra_copts)
 
     ctx.file("WORKSPACE", "workspace(name = {name})\n".format(
