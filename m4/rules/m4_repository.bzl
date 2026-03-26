@@ -151,6 +151,9 @@ def _m4_repository(ctx):
     # with the system version on Windows.
     ctx.template("src/m4.h", "src/m4.h", substitutions = {
         "char *mktemp ();": "",
+        # Include the relocated header to avoid conflicts with libc.
+        # Please see //m4/internal/gnulib/gnulib.bzl#gnulib_overlay for more context.
+        '#include "error.h"': '#include "gnulib-error.h"',
     }, executable = False)
 
     # Older versions of M4 don't use the gnulib copy of <signal.h>.
