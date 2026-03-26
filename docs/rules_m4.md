@@ -87,7 +87,7 @@ This workspace macro will create a [`m4_repository`](#m4_repository) named
 | Name  | Description | Default Value |
 | :------------- | :------------- | :------------- |
 | <a id="m4_register_toolchains-version"></a>version |  A supported version of GNU M4.   |  `"1.4.18"` |
-| <a id="m4_register_toolchains-extra_copts"></a>extra_copts |  Additional C compiler options to use when building GNU M4.   |  `[]` |
+| <a id="m4_register_toolchains-extra_copts"></a>extra_copts |  Additional C compiler options to use when building GNU M4. Will replace the template `{REPO_NAME}` with the name of the M4 repository (useful to inject extra paths to compiler calls, such as `-I`).  |  `[]` |
 
 
 <a id="m4_toolchain"></a>
