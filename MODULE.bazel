@@ -1,6 +1,7 @@
 module(
     name = "rules_m4",
     version = "0.3",
+    bazel_compatibility = ["<=8.6.0"],  # Does not work on Bazel 9 yet.
     compatibility_level = 1,
 )
 
