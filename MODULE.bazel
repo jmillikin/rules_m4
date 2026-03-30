@@ -12,10 +12,14 @@ bazel_dep(
     name = "rules_cc",
     version = "0.1.1",
 )
+bazel_dep(
+    name = "m4",
+    version = "1.4.20.bcr.2",
+)
 
 bazel_dep(
     name = "googletest",
-    version = "1.12.1",
+    version = "1.17.0.bcr.2",
     dev_dependency = True,
     repo_name = "com_google_googletest",
 )
@@ -41,9 +45,9 @@ default_toolchain = use_extension(
     "//m4/internal:default_toolchain_ext.bzl",
     "default_toolchain_ext",
 )
-use_repo(default_toolchain, "m4")
+use_repo(default_toolchain, "m4_toolchain")
 
-register_toolchains("@m4//:toolchain")
+register_toolchains("@m4_toolchain//:toolchain")
 
 testutil = use_extension(
     "//m4/internal:testutil_ext.bzl",
