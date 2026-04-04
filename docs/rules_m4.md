@@ -272,3 +272,47 @@ register_toolchains("@m4//:toolchain")
 | <a id="m4_repository_ext.repository-version"></a>version |  A supported version of GNU M4.   | String | optional |  `"1.4.18"`  |
 
 
+
+<a id="m4_toolchains_ext"></a>
+
+## m4_toolchains_ext
+
+<pre>
+m4_toolchains_ext = use_extension("@rules_m4//m4/extensions:m4_toolchains_ext.bzl", "m4_toolchains_ext")
+m4_toolchains_ext.toolchain(<a href="#m4_toolchains_ext.toolchain-name">name</a>, <a href="#m4_toolchains_ext.toolchain-m4_env">m4_env</a>, <a href="#m4_toolchains_ext.toolchain-m4_tool">m4_tool</a>)
+</pre>
+
+Module extension for declaring M4 toolchains with custom target binaries.
+
+The resulting repository will have one subdirectory per named module tag, which
+contains a `:toolchain` target that can be registered with Bazel.
+
+### Example
+
+```starlark
+m4_toolchains = use_extension(
+    "@rules_m4//m4/extensions:m4_toolchains_ext.bzl",
+    "m4_toolchain_ext",
+)
+
+m4_toolchains.toolchain(name = "custom", m4_tool = "//custom_m4:m4")
+use_repo(m4_toolchains, "m4_toolchains")
+register_toolchains("@m4_toolchains//custom:toolchain")
+```
+
+
+**TAG CLASSES**
+
+<a id="m4_toolchains_ext.toolchain"></a>
+
+### toolchain
+
+**Attributes**
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="m4_toolchains_ext.toolchain-name"></a>name |  The name of the toolchain repository to create.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="m4_toolchains_ext.toolchain-m4_env"></a>m4_env |  Additional environment variables to set when running `m4_tool`.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
+| <a id="m4_toolchains_ext.toolchain-m4_tool"></a>m4_tool |  The label of an `m4` executable target.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+
+

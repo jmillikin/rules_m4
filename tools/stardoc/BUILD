@@ -16,11 +16,20 @@ stardoc(
     deps = ["//m4:bzl_srcs"],
 )
 
+stardoc(
+    name = "m4_toolchains_ext_md",
+    out = "m4_toolchains_ext.md",
+    header_template = ":empty.vm",
+    input = "//m4/extensions:m4_toolchains_ext_bzl",
+    deps = ["//m4:bzl_srcs"],
+)
+
 genrule(
     name = "rules_m4_md",
     srcs = [
         ":m4_md",
         ":m4_repository_ext_md",
+        ":m4_toolchains_ext_md",
     ],
     outs = ["rules_m4.md"],
     cmd = "cat $(SRCS) > $@",
