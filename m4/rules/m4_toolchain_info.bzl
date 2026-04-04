@@ -14,7 +14,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-"""Bazel toolchain for the m4 macro expander."""
+"""Definition of the `m4_toolchain_info` rule."""
 
 load("//m4:providers.bzl", "M4ToolchainInfo")
 
@@ -40,13 +40,19 @@ def _m4_toolchain_info(ctx):
 
 m4_toolchain_info = rule(
     _m4_toolchain_info,
+    doc = """
+Provides `ToolchainInfo` and `TemplateVariableInfo` for the M4 toolchain.
+""",
     attrs = {
         "m4_tool": attr.label(
+            doc = "A `FilesToRunProvider` for the `m4` binary.",
             mandatory = True,
             executable = True,
             cfg = "exec",
         ),
-        "m4_env": attr.string_dict(),
+        "m4_env": attr.string_dict(
+            doc = "Additional environment variables to set when running `m4_tool`.",
+        ),
     },
     provides = [
         platform_common.ToolchainInfo,

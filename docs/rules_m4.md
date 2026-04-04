@@ -44,6 +44,28 @@ m4(
 | <a id="m4-reload_state"></a>reload_state |  Optional input file for GNU M4 frozen state. Must have extension `.m4f`.   | <a href="https://bazel.build/concepts/labels">Label</a> | optional |  `None`  |
 
 
+<a id="m4_toolchain_info"></a>
+
+## m4_toolchain_info
+
+<pre>
+load("@rules_m4//m4:m4.bzl", "m4_toolchain_info")
+
+m4_toolchain_info(<a href="#m4_toolchain_info-name">name</a>, <a href="#m4_toolchain_info-m4_env">m4_env</a>, <a href="#m4_toolchain_info-m4_tool">m4_tool</a>)
+</pre>
+
+Provides `ToolchainInfo` and `TemplateVariableInfo` for the M4 toolchain.
+
+**ATTRIBUTES**
+
+
+| Name  | Description | Type | Mandatory | Default |
+| :------------- | :------------- | :------------- | :------------- | :------------- |
+| <a id="m4_toolchain_info-name"></a>name |  A unique name for this target.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
+| <a id="m4_toolchain_info-m4_env"></a>m4_env |  Additional environment variables to set when running `m4_tool`.   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  `{}`  |
+| <a id="m4_toolchain_info-m4_tool"></a>m4_tool |  A `FilesToRunProvider` for the `m4` binary.   | <a href="https://bazel.build/concepts/labels">Label</a> | required |  |
+
+
 <a id="M4ToolchainInfo"></a>
 
 ## M4ToolchainInfo

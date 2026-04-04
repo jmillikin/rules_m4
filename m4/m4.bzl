@@ -39,6 +39,10 @@ load(
     _m4_repository = "m4_repository",
 )
 load(
+    "//m4/rules:m4_toolchain_info.bzl",
+    _m4_toolchain_info = "m4_toolchain_info",
+)
+load(
     "//m4/rules:m4_toolchain_repository.bzl",
     _m4_toolchain_repository = "m4_toolchain_repository",
 )
@@ -47,6 +51,7 @@ M4_TOOLCHAIN_TYPE = _M4_TOOLCHAIN_TYPE
 m4 = _m4
 m4_toolchain = _m4_toolchain
 m4_repository = _m4_repository
+m4_toolchain_info = _m4_toolchain_info
 m4_toolchain_repository = _m4_toolchain_repository
 M4ToolchainInfo = _M4ToolchainInfo
 

@@ -71,7 +71,7 @@ cc_binary(
 """
 
 _RULES_M4_INTERNAL_BUILD = """
-load("@rules_m4//m4/internal:toolchain_info.bzl", "m4_toolchain_info")
+load("@rules_m4//m4/rules:m4_toolchain_info.bzl", "m4_toolchain_info")
 
 m4_toolchain_info(
     name = "toolchain_info",
