@@ -17,7 +17,11 @@
 """Definition of the `m4_repository` repository rule."""
 
 load("//m4/internal:gnulib/gnulib.bzl", "gnulib_overlay")
-load("//m4/internal:versions.bzl", "VERSION_URLS")
+load(
+    "//m4/internal:versions.bzl",
+    "VERSION_URLS",
+    "custom_version_urls",
+)
 
 _M4_BUILD = """
 load("@rules_cc//cc:cc_library.bzl", "cc_library")
@@ -78,7 +82,13 @@ m4_toolchain_info(
 
 def _m4_repository(ctx):
     version = ctx.attr.version
-    source = VERSION_URLS[version]
+    version_urls = VERSION_URLS
+    if ctx.attr.http_mirrors or ctx.attr.extra_http_mirrors:
+        version_urls = custom_version_urls(
+            ctx.attr.http_mirrors,
+            ctx.attr.extra_http_mirrors,
+        )
+    source = version_urls[version]
 
     ctx.download_and_extract(
         url = source["urls"],
@@ -186,6 +196,20 @@ m4_repository(
         ),
         "extra_linkopts": attr.string_list(
             doc = "Additional linker options to use when building GNU M4.",
+        ),
+        "extra_http_mirrors": attr.string_list(
+            doc = """
+Additional HTTP mirrors of the GNU M4 source archives.
+
+These mirrors will be appended to the list of default GNU mirrors.
+""",
+        ),
+        "http_mirrors": attr.string_list(
+            doc = """
+If set then this value will be used instead of the default HTTP mirror list.
+
+The `extra_http_mirrors` attribute will be appended to this list.
+""",
         ),
         "_gnulib_build": attr.label(
             default = Label("//m4/internal:gnulib/gnulib.BUILD"),

@@ -121,7 +121,8 @@ An [`M4ToolchainInfo`](#M4ToolchainInfo).
 <pre>
 load("@rules_m4//m4:m4.bzl", "m4_repository")
 
-m4_repository(<a href="#m4_repository-name">name</a>, <a href="#m4_repository-extra_copts">extra_copts</a>, <a href="#m4_repository-extra_linkopts">extra_linkopts</a>, <a href="#m4_repository-repo_mapping">repo_mapping</a>, <a href="#m4_repository-version">version</a>)
+m4_repository(<a href="#m4_repository-name">name</a>, <a href="#m4_repository-extra_copts">extra_copts</a>, <a href="#m4_repository-extra_http_mirrors">extra_http_mirrors</a>, <a href="#m4_repository-extra_linkopts">extra_linkopts</a>, <a href="#m4_repository-http_mirrors">http_mirrors</a>, <a href="#m4_repository-repo_mapping">repo_mapping</a>,
+              <a href="#m4_repository-version">version</a>)
 </pre>
 
 Repository rule for GNU M4.
@@ -146,7 +147,9 @@ m4_repository(
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="m4_repository-name"></a>name |  A unique name for this repository.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | required |  |
 | <a id="m4_repository-extra_copts"></a>extra_copts |  Additional C compiler options to use when building GNU M4.   | List of strings | optional |  `[]`  |
+| <a id="m4_repository-extra_http_mirrors"></a>extra_http_mirrors |  Additional HTTP mirrors of the GNU M4 source archives.<br><br>These mirrors will be appended to the list of default GNU mirrors.   | List of strings | optional |  `[]`  |
 | <a id="m4_repository-extra_linkopts"></a>extra_linkopts |  Additional linker options to use when building GNU M4.   | List of strings | optional |  `[]`  |
+| <a id="m4_repository-http_mirrors"></a>http_mirrors |  If set then this value will be used instead of the default HTTP mirror list.<br><br>The `extra_http_mirrors` attribute will be appended to this list.   | List of strings | optional |  `[]`  |
 | <a id="m4_repository-repo_mapping"></a>repo_mapping |  In `WORKSPACE` context only: a dictionary from local repository name to global repository name. This allows controls over workspace dependency resolution for dependencies of this repository.<br><br>For example, an entry `"@foo": "@bar"` declares that, for any time this repository depends on `@foo` (such as a dependency on `@foo//some:target`, it should actually resolve that dependency within globally-declared `@bar` (`@bar//some:target`).<br><br>This attribute is _not_ supported in `MODULE.bazel` context (when invoking a repository rule inside a module extension's implementation function).   | <a href="https://bazel.build/rules/lib/dict">Dictionary: String -> String</a> | optional |  |
 | <a id="m4_repository-version"></a>version |  A supported version of GNU M4.   | String | required |  |
 
@@ -205,7 +208,8 @@ register_toolchains("@m4//:toolchain")
 
 <pre>
 m4_repository_ext = use_extension("@rules_m4//m4/extensions:m4_repository_ext.bzl", "m4_repository_ext")
-m4_repository_ext.repository(<a href="#m4_repository_ext.repository-name">name</a>, <a href="#m4_repository_ext.repository-extra_copts">extra_copts</a>, <a href="#m4_repository_ext.repository-extra_linkopts">extra_linkopts</a>, <a href="#m4_repository_ext.repository-version">version</a>)
+m4_repository_ext.repository(<a href="#m4_repository_ext.repository-name">name</a>, <a href="#m4_repository_ext.repository-extra_copts">extra_copts</a>, <a href="#m4_repository_ext.repository-extra_http_mirrors">extra_http_mirrors</a>, <a href="#m4_repository_ext.repository-extra_linkopts">extra_linkopts</a>, <a href="#m4_repository_ext.repository-http_mirrors">http_mirrors</a>,
+                             <a href="#m4_repository_ext.repository-version">version</a>)
 </pre>
 
 Module extension for declaring dependencies on GNU M4.
@@ -240,7 +244,9 @@ register_toolchains("@m4//:toolchain")
 | :------------- | :------------- | :------------- | :------------- | :------------- |
 | <a id="m4_repository_ext.repository-name"></a>name |  An optional name for the repository.<br><br>The name must be unique within the set of names registered by this extension. If unset, the repository name will default to `"m4_v{version}"`.   | <a href="https://bazel.build/concepts/labels#target-names">Name</a> | optional |  `""`  |
 | <a id="m4_repository_ext.repository-extra_copts"></a>extra_copts |  Additional C compiler options to use when building GNU M4.   | List of strings | optional |  `[]`  |
+| <a id="m4_repository_ext.repository-extra_http_mirrors"></a>extra_http_mirrors |  Additional HTTP mirrors of the GNU M4 source archives.<br><br>These mirrors will be appended to the list of default GNU mirrors.   | List of strings | optional |  `[]`  |
 | <a id="m4_repository_ext.repository-extra_linkopts"></a>extra_linkopts |  Additional linker options to use when building GNU M4.   | List of strings | optional |  `[]`  |
+| <a id="m4_repository_ext.repository-http_mirrors"></a>http_mirrors |  If set then this value will be used instead of the default HTTP mirror list.<br><br>The `extra_http_mirrors` attribute will be appended to this list.   | List of strings | optional |  `[]`  |
 | <a id="m4_repository_ext.repository-version"></a>version |  A supported version of GNU M4.   | String | optional |  `"1.4.18"`  |
 
 
