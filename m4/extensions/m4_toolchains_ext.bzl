@@ -39,7 +39,7 @@ def _m4_toolchains_repo_impl(ctx):
         name = repr(ctx.name),
     ))
     ctx.file("BUILD.bazel", "")
-    for (toolchain_name, m4_tool) in ctx.m4_tools.items():
+    for (toolchain_name, m4_tool) in ctx.attr.m4_tools.items():
         m4_env_json = ctx.attr.m4_envs.get(toolchain_name, "{}")
         ctx.file(toolchain_name + "/BUILD.bazel", _BUILD.format(
             m4_tool = repr(str(m4_tool)),
